@@ -1,17 +1,25 @@
 # discord-audio-pipe
-[![GitHub Workflow Status](https://github.com/QiCuiHub/discord-audio-pipe/workflows/CI/badge.svg)](https://github.com/QiCuiHub/discord-audio-pipe/actions?query=workflow%3ACI)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/QiCuiHub/discord-audio-pipe)](https://github.com/QiCuiHub/discord-audio-pipe/releases/latest)
-[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/QiCuiHub/discord-audio-pipe.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/QiCuiHub/discord-audio-pipe/context:python)
 
-Simple program to send stereo audio (microphone, stereo mix, virtual audio cable, etc) into a discord bot.
+This is forked from https://github.com/QiCuiHub/discord-audio-pipe.
 
-You can download the latest release [**here**](https://github.com/QiCuiHub/discord-audio-pipe/releases)
-- If you are using the source code, install the dependencies and start the program using `main.pyw`
-- The `.exe` does not require python or dependencies
+Program to send stereo audio (microphone, stereo mix, virtual audio cable, etc) into a Discord bot.  This fork is specifically adapted to work with the Syrinscape Online Player.
+
+## Upcoming Features
+This fork intends to extend the functionality of the original by adding the following:
+
+* Detection as to whether the Syrinscape Online Player is running on the host machine.
+* Accept text commands from Discord to change settings.
+  * Connect to voice channel
+  * Disconnect from voice channel
+  * Set output volume
+  * Query audio devices
+  * Change audio device
+
+None of these have been implemented yet.
 
 ## Setting up a Bot account
 1. Follow the steps [**here**](https://discordpy.readthedocs.io/en/latest/discord.html) to setup and invite a discord bot
-2. To link the program to your bot, create a file ``token.txt`` in the same directory as the `.exe` / `main.pyw` and save the bot token inside
+2. To link the program to your bot, create a file ``token.txt`` in the same directory as `main.pyw` and save the bot token inside
 
 ## Dependencies
 Requires Python 3.5+. Install dependencies by running `pip3 install -r requirements.txt`
@@ -28,7 +36,7 @@ macOS requires PortAudio and Opus libraries
 ```
 
 ## CLI
-Running the `.exe` / `main.pyw` without any arguments will start the graphical interface. Alternatively, discord-audio-pipe can be run from the command line and contains some tools to query system audio devices and accessible channels.
+Running `main.pyw` without any arguments will start the graphical interface. Alternatively, discord-audio-pipe can be run from the command line and contains some tools to query system audio devices and accessible channels.
 ```
 usage: main.pyw [-h] [-t TOKEN] [-v] [-c CHANNEL] [-d DEVICE] [-D] [-C]
 
