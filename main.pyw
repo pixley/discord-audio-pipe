@@ -79,8 +79,7 @@ async def main(bot):
                 token = token_file.read()
                 token_file.close()
 
-        # prepares connect call as part of containing loop execution
-        asyncio.ensure_future(cli.connect(bot, args.device, args.channel))
+        asyncio.ensure_future(cli.connect(bot))
 
         # log in and connect
         await bot.start(token)
@@ -97,9 +96,13 @@ async def main(bot):
 
 # run program
 
+config.setup_config()
 # bot.Dap_Bot bot
 bot = bot.Dap_Bot(command_prefix='!')
 loop = asyncio.get_event_loop()
+
+#apply config
+
 
 try:
     loop.run_until_complete(main(bot))

@@ -2,11 +2,25 @@ import sys
 import sound
 import discord
 import logging
+import config
 from discord.ext import commands
 
 # ------------
 # Bot commands
 # ------------
+
+# params: Discord.ext.commands.Context context
+@commands.command()
+async def help(context):
+    # Set[Discord.ext.commands.Command] registered_commands
+    registered_commands = context.bot.commands
+    # String command_list
+    command_list = "This bot accepts the following commands:"
+
+    for command in registered_commands:
+        command_list = command_list + "\n" + command.name
+
+    await context.send(command_list)
 
 # params: Discord.ext.commands.Context context, List[String] split_channel_name
 @commands.command()
@@ -77,7 +91,7 @@ async def leave(context):
         print("Error: Not in voice channel")
         await context.send("Error: Bot was not in a voice channel on this server.")
 
-#params: Discord.ext.commands.Context context, int volume
+# params: Discord.ext.commands.Context context, int volume
 @commands.command()
 async def volume(context, vol: int):
     float_vol = vol / 100.0
@@ -88,15 +102,33 @@ async def volume(context, vol: int):
         print("Error: bad volume value")
         await context.send("Error: !volume accepts integer values from 0 to 200.")
 
+# params: Discord.ext.commands.Context context
+@commands.command()
+async def devices(context):
+    print("Device list requested.")
+    await context.send(sound.query_devices())
+
+# params: Discord.ext.commands.Context context, int device_id
+@commands.command()
+async def set_device(context, device_id):
+    if context.bot.set_device(device_id):
+        await context.send("Now playing from device {}".format(device_id))
+    else:
+        await context.send("Error: !set_device requires a valid device id.  Call !devices for a list of valid devices.")
+
+
 # ----------------
 # End bot commands
 # ----------------
 
 # params: bot.Dap_Bot bot
 def add_commands(bot):
+    bot.add_command(help)
     bot.add_command(join)
     bot.add_command(leave)
     bot.add_command(volume)
+    bot.add_command(devices)
+    bot.add_command(set_device)
 
 # params: bot.Dap_Bot bot
 async def connect(bot):

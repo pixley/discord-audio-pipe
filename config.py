@@ -1,16 +1,20 @@
 import configparser
+import asyncio
 
 # configparser.ConfigParser config
 config = None
+# asyncio.Task save_task
+save_task = None
 
 # return boolean
 def setup_config():
 	config = configparser.ConfigParser()
 	config.read("settings.cfg")
 	if config.sections == []:
-		print("settings.cfg is missing!")
+		print("settings.cfg is missing!  Cannot load!")
 		return False
 	else:
+		print("settings.cfg successfully loaded")
 		return True
 
 # params: String section, String key
@@ -18,6 +22,7 @@ def setup_config():
 def get_config(section, key):
 	return config[section][key]
 
+# alias for readability's sake
 get_config_string = get_config
 
 # params: String section, String key
@@ -39,12 +44,18 @@ def get_config_bool(section, key):
 def set_config(section, key, value):
 	config[section][key] = value
 
-# return boolean
-def save_config():
+	# allow multiple config sets to be bundled into one save
+	if save_task is None:
+		save_task = asyncio.ensure_future(save_config())
+
+async def save_config():
+	# clear task
+	save_task = None
+
 	# File config_file
 	config_file = open("settings.cfg", "w")
 	if config_file is not None:
 		config.write(config_file)
-		return True
+		print("settings.cfg successfully saved")
 	else:
-		return False
+		print("settings.cfg is missing!  Cannot save!")
