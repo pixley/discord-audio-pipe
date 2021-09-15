@@ -16,6 +16,7 @@ import sys
 import cli
 import sound
 import bot
+import config
 import asyncio
 import discord
 import argparse
@@ -66,9 +67,17 @@ async def main(bot):
             print(index, device)
 
         # check for token
+        # String token
         token = args.token
         if token is None:
-            token = open("token.txt", "r").read()
+            # File token_file
+            token_file = open("token.txt", "r")
+            if token_file is None:
+                print("Error: no token specified.")
+                return
+            else:
+                token = token_file.read()
+                token_file.close()
 
         # prepares connect call as part of containing loop execution
         asyncio.ensure_future(cli.connect(bot, args.device, args.channel))
