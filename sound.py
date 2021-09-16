@@ -55,3 +55,10 @@ def query_devices():
         raise DeviceNotFoundError()
 
     return options
+
+def get_device(index):
+    device = sd.query_devices(index)
+    if device is None:
+        raise DeviceNotFoundError()
+    else:
+        return device
