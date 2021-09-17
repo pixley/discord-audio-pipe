@@ -102,7 +102,7 @@ bot = bot.Dap_Bot(command_prefix='!')
 loop = asyncio.get_event_loop()
 
 #apply config
-
+bot.apply_config()
 
 try:
     loop.run_until_complete(main(bot))

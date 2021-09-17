@@ -8,6 +8,7 @@ class Dap_Bot(commands.Bot):
 	def __init__(self):
 		self.stream = sound.PCMStream()
 		self.device_id = -1
+		self.voice = None
 
 	def apply_config(self):
 		# device id
@@ -35,8 +36,19 @@ class Dap_Bot(commands.Bot):
 	# params: float volume
 	# return: boolean
 	def change_volume(self, volume):
-		if (volume >= 0.0 and volume <= 2.0):
-			discord.PCMVolumeTransformer(self.stream, volume)
+		if volume >= 0.0 and volume <= 2.0:
+			if voice is not None and voice.source is not None:
+				voice.source.volume = volume
 			config.set_config("Audio", "volume", volume)
 			return True
 		return False
+
+	#params: Discord.VoiceChannel voice_channel
+	def join_voice_channel(self, voice_channel):
+		voice = await channel.connect()
+        voice.play(discord.PCMAudio(bot.stream))
+        voice.source = discord.PCMVolumeTransformer(self.stream)
+        voice.souce.volume = config.get_config_float("Audio", "volume")
+
+    def clear_voice(self):
+    	voice = None

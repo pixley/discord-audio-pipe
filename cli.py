@@ -62,10 +62,9 @@ async def join(context, *split_channel_name):
         try:
             print("Joining channel...")
             # discord.VoiceChannel channel
-            channel = bot.get_channel(channel_id)
+            channel = context.bot.get_channel(channel_id)
 
-            voice = await channel.connect()
-            voice.play(discord.PCMAudio(bot.stream))
+            context.bot.join_voice_channel(channel)
 
             print(f"Playing audio in {channel.name}")
             await context.send("Joined channel {}.".format(channel.name))
@@ -82,6 +81,7 @@ async def leave(context):
     channel = get_current_voice_channel(context)
     if channel is not None:
         await channel.disconnect()
+        context.bot.clear_voice()
 
         print(f"Left channel {channel.name}")
         await context.send("Left channel {}.".format(channel.name))
