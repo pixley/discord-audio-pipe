@@ -6,3 +6,4 @@ token.txt
 main.py
 build/main
 .vscode
+DAP_errors.log

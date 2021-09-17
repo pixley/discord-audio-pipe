@@ -98,11 +98,16 @@ async def main(bot):
 
 config.setup_config()
 # bot.Dap_Bot bot
-bot = bot.Dap_Bot(command_prefix='!')
+bot = bot.Dap_Bot('!')
+bot.case_insensitive = True
+bot.help_command = None
+
 loop = asyncio.get_event_loop()
 
 #apply config
 bot.apply_config()
+
+cli.add_commands(bot)
 
 try:
     loop.run_until_complete(main(bot))

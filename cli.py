@@ -52,7 +52,7 @@ async def join(context, *split_channel_name):
         # List[Discord.VoiceChannel] channels
         channels = server.voice_channels
         for channel in channels:
-            if channel.name == joined_channel_name:
+            if channel.name == channel_name:
                 channel_id = channel.id
     
     if channel_id == 0:
@@ -64,9 +64,9 @@ async def join(context, *split_channel_name):
             # discord.VoiceChannel channel
             channel = context.bot.get_channel(channel_id)
 
-            context.bot.join_voice_channel(channel)
+            await context.bot.join_voice_channel(channel)
 
-            print(f"Playing audio in {channel.name}")
+            print("Playing audio in {}".format(channel.name))
             await context.send("Joined channel {}.".format(channel.name))
         except Exception:
             logging.exception("Error on channel join")
@@ -80,10 +80,9 @@ async def leave(context):
     # Discord.VoiceChannel channels
     channel = get_current_voice_channel(context)
     if channel is not None:
-        await channel.disconnect()
-        context.bot.clear_voice()
+        await context.bot.leave_voice_channel()
 
-        print(f"Left channel {channel.name}")
+        print("Left channel {}".format(channel.name))
         await context.send("Left channel {}.".format(channel.name))
     else:
         print("Error: Not in voice channel")
@@ -121,8 +120,8 @@ async def devices(context):
 
 # params: Discord.ext.commands.Context context, int device_id
 @commands.command()
-async def set_device(context, device_id):
-    if context.bot.set_device(device_id):
+async def set_device(context, device_id: int):
+    if context.bot.change_device(device_id):
         await context.send("Now playing from device {}".format(device_id))
     else:
         await context.send("Error: !set_device requires a valid device id.  Call !devices for a list of valid devices.")
@@ -189,10 +188,9 @@ async def watch(context, process_name):
 # params: Discord.ext.commands.Context context
 # return Discord.VoiceChannel
 def get_current_voice_channel(context):
-    # String cur_channel
-    cur_channel = ""
-    # List[Discord.VoiceChannel] channels
-    for channel in channels:
+    for client in context.bot.voice_clients:
+        # Discord.VoiceChannel channel
+        channel = client.channel
         if channel.guild == context.guild:
             return channel
     return None
@@ -226,7 +224,7 @@ async def connect(bot):
     try:
         print("Connecting...")
         await bot.wait_until_ready()
-        print(f"Logged in as {bot.user.name}")
+        print("Logged in as {}".format(bot.user.name))
 
     except Exception:
         logging.exception("Error on cli connect")

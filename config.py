@@ -8,6 +8,8 @@ save_task = None
 
 # return boolean
 def setup_config():
+	# declare config for use within the function (Python, scope is a thing, bruh)
+	global config
 	config = configparser.ConfigParser()
 	config.read("settings.cfg")
 	if config.sections == []:
@@ -20,7 +22,10 @@ def setup_config():
 # params: String section, String key
 # return String
 def get_config(section, key):
-	return config[section][key]
+	if config is not None:
+		return config[section][key]
+	else:
+		raise Exception()
 
 # alias for readability's sake
 get_config_string = get_config
@@ -42,14 +47,18 @@ def get_config_bool(section, key):
 
 # params: String section, String key, ??? value
 def set_config(section, key, value):
-	config[section][key] = value
+	# stupid Python global nonsense...
+	global config
+	config[section][key] = str(value)
 
 	# allow multiple config sets to be bundled into one save
+	global save_task
 	if save_task is None:
 		save_task = asyncio.ensure_future(save_config())
 
 async def save_config():
 	# clear task
+	global save_task
 	save_task = None
 
 	# File config_file

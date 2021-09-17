@@ -37,10 +37,10 @@ class DeviceNotFoundError(Exception):
 
     def __str__(self):
         return (
-            f"Devices \n"
-            f"{self.devices} \n "
-            f"Host APIs \n"
-            f"{pformat(self.host_apis)}"
+            "Devices \n"
+            "{self.devices} \n "
+            "Host APIs \n"
+            "{pformat(self.host_apis)}"
         )
 
 
