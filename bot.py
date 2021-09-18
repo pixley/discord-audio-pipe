@@ -47,7 +47,7 @@ class Dap_Bot(commands.Bot):
 	#params: Discord.VoiceChannel channel
 	async def join_voice_channel(self, channel):
 		self.voice = await channel.connect()
-		self.voice.play(discord.PCMAudio(self.stream))
+		self.voice.play(self.stream)
 		vol = config.get_config_float("Audio", "volume")
 		self.voice.source = discord.PCMVolumeTransformer(original=self.stream, volume=vol)
 
