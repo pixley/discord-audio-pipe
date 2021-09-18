@@ -47,9 +47,9 @@ class Dap_Bot(commands.Bot):
 	#params: Discord.VoiceChannel channel
 	async def join_voice_channel(self, channel):
 		self.voice = await channel.connect()
-		self.voice.play(discord.PCMAudio(bot.stream))
-		self.voice.source = discord.PCMVolumeTransformer(self.stream)
-		self.voice.souce.volume = config.get_config_float("Audio", "volume")
+		self.voice.play(discord.PCMAudio(self.stream))
+		vol = config.get_config_float("Audio", "volume")
+		self.voice.source = discord.PCMVolumeTransformer(original=self.stream, volume=vol)
 
 	async def leave_voice_channel(self):
 		if self.voice is not None:

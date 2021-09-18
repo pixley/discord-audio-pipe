@@ -11,30 +11,17 @@ from discord.ext import commands
 # Bot commands
 # ------------
 
-# params: Discord.ext.commands.Context context
-@commands.command()
-async def help(context):
-    # Set[Discord.ext.commands.Command] registered_commands
-    registered_commands = context.bot.commands
-    # String command_list
-    command_list = "This bot accepts the following commands:"
-
-    for command in registered_commands:
-        command_list = command_list + "\n" + command.name
-
-    await context.send(command_list)
-
 # params: Discord.ext.commands.Context context, List[String] split_channel_name
-@commands.command()
+@commands.command(brief="Joins a voice channel.", description="Joins the user's current voice channel or a specified channel.")
 async def join(context, *split_channel_name):
     # int channel_id
     channel_id = 0
     # String channel_name
     channel_name = ""
 
-    if split_channel_name is None:
+    if len(split_channel_name) == 0:
         # Discord.Member author
-        author = Context.author
+        author = context.author
         # Discord.VoiceState author_voice
         author_voice = author.voice
         if author_voice is not None:
@@ -73,7 +60,7 @@ async def join(context, *split_channel_name):
             await context.send("Error joining channel {}.".format(channel_name))
 
 # params: Discord.ext.commands.Context context
-@commands.command()
+@commands.command(brief="Leaves the voice channel.", description="Leaves the current voice channel if in one.")
 async def leave(context):
     # boolean success
     success = False
@@ -89,24 +76,25 @@ async def leave(context):
         await context.send("Error: Bot was not in a voice channel on this server.")
 
 # params: Discord.ext.commands.Context context, int volume
-@commands.command()
+@commands.command(brief="Check or adjust volume.", description="Changes volume to specified percentage or reports the current volume.")
 async def volume(context, vol: typing.Optional[int]):
     if vol is None:
         # Respond with current volume.
         # int cur_volume
         cur_volume = int(config.get_config_float("Audio", "volume") * 100.0)
         print("Current volume requested")
-        await context.send("Volume is currently set to {}.".format(cur_volume))
-    float_vol = float(int(vol)) / 100.0
-    if context.bot.change_volume(vol):
-        print("Volume changed")
-        await context.send("Volume changed to {}".format(vol))
+        await context.send("Volume is currently set to {}%.".format(cur_volume))
     else:
-        print("Error: bad volume value")
-        await context.send("Error: !volume accepts integer values from 0 to 200.")
+        float_vol = float(vol) / 100.0
+        if context.bot.change_volume(float_vol):
+            print("Volume changed")
+            await context.send("Volume changed to {}%".format(vol))
+        else:
+            print("Error: bad volume value")
+            await context.send("Error: !volume accepts integer values from 0 to 200.")
 
 # params: Discord.ext.commands.Context context
-@commands.command()
+@commands.command(brief="Lists audio devices.", description="Outputs a list of audio devices present on the bot's host machine.  The indices can be used for `!set_device`.")
 async def devices(context):
     print("Device list requested.")
     # sounddevice.DeviceList device_list
@@ -119,7 +107,7 @@ async def devices(context):
         await context.send("Error: Could not retrieve device list.  Contact administrator.")
 
 # params: Discord.ext.commands.Context context, int device_id
-@commands.command()
+@commands.command(brief="Changes audio device.", description="Changes which audio device the bot is outputting from, based on indices presented in `!devices`")
 async def set_device(context, device_id: int):
     if context.bot.change_device(device_id):
         await context.send("Now playing from device {}".format(device_id))
@@ -127,7 +115,7 @@ async def set_device(context, device_id: int):
         await context.send("Error: !set_device requires a valid device id.  Call !devices for a list of valid devices.")
 
 # params: Discord.ext.commands.Context context
-@commands.command()
+@commands.command(brief="Provides bot's current status.", description="Outputs current voice channel, audio device, and whether the watched process is active.")
 async def status(context):
     # present voice connection status, current audio device, and watched process status
     print("Status requested")
@@ -166,8 +154,8 @@ async def status(context):
     await context.send(message)
 
 #params: Discord.ext.commands.Context context, String process_name
-@commands.command()
-async def watch(context, process_name):
+@commands.command(brief="Changes watched process.", description="Sets the watched process to the specified name.  You can use `!status` to see that process's status.")
+async def watch(context, process_name: typing.Optional[str]):
     print("Watched process changed to {}".format(process_name))
     config.set_config("System", "watched_process_name", process_name)
     if process_name is None:
@@ -210,7 +198,6 @@ def check_process(process_name):
 
 # params: bot.Dap_Bot bot
 def add_commands(bot):
-    bot.add_command(help)
     bot.add_command(join)
     bot.add_command(leave)
     bot.add_command(volume)

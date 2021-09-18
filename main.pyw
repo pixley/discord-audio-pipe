@@ -100,7 +100,6 @@ config.setup_config()
 # bot.Dap_Bot bot
 bot = bot.Dap_Bot('!')
 bot.case_insensitive = True
-bot.help_command = None
 
 loop = asyncio.get_event_loop()
 
@@ -113,5 +112,7 @@ try:
     loop.run_until_complete(main(bot))
 except KeyboardInterrupt:
     print("Exiting...")
-    loop.run_until_complete(bot.logout())
+    loop.run_until_complete(bot.close())
+    # this sleep prevents a bugged exception on Windows
+    loop.run_until_complete(asyncio.sleep(1))
     loop.close()
