@@ -15,6 +15,10 @@ class PCMStream(discord.AudioSource):
         self.stream = None
 
     def read(self):
+        if self.stream is None:
+            print("Audio stream unavailable.")
+            return
+        
         # frame is 4 bytes
         # Discord reads 20 ms worth of audio at a time (20 ms * 50 == 1000 ms == 1 sec)
         frames = int(self.stream.samplerate / 50)
