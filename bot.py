@@ -1,4 +1,5 @@
 import sound
+import syrinscape
 import discord
 import logging
 import config
@@ -7,13 +8,17 @@ from discord.ext import commands
 class Dap_Bot(commands.Bot):
 	def __init__(self, command_prefix):
 		commands.Bot.__init__(self, command_prefix)
-		self.stream = sound.PCMStream()
+		# discord.AudioSource stream
+		self.stream = None
+		# int device_id
 		self.device_id = -1
+		# discord.VoiceClient
 		self.voice = None
 
 	def apply_config(self):
 		# device id
 		self.device_id = config.get_config_int("Audio", "device_id")
+		self.stream = sound.PSMStream()
 		self.stream.change_device(self.device_id)
 
 	# params: int new_id
