@@ -1,5 +1,4 @@
 import sound
-import syrinscape
 import discord
 import logging
 import config
@@ -18,7 +17,7 @@ class Dap_Bot(commands.Bot):
 	def apply_config(self):
 		# device id
 		self.device_id = config.get_config_int("Audio", "device_id")
-		self.stream = sound.PSMStream()
+		self.stream = sound.PCMStream()
 		self.stream.change_device(self.device_id)
 
 	# params: int new_id

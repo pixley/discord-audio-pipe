@@ -157,10 +157,11 @@ async def status(context):
 @commands.command(brief="Changes watched process.", description="Sets the watched process to the specified name.  You can use `!status` to see that process's status.")
 async def watch(context, process_name: typing.Optional[str]):
 	print("Watched process changed to {}".format(process_name))
-	config.set_config("System", "watched_process_name", process_name)
 	if process_name is None:
+		config.set_config("System", "watched_process_name", "")
 		await context.send("Watched process has been cleared.")
 	else:
+		config.set_config("System", "watched_process_name", process_name)
 		# String message
 		message = "Now watching process {}.".format(process_name)
 		if (check_process(process_name)):
