@@ -1,3 +1,0 @@
-discord.py[voice]==1.6.0
-PyQt5==5.15.1
-build/sounddevice-0.4.1-cp37-cp37m-win_amd64.whl

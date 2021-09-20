@@ -1,6 +1,6 @@
 # discord-audio-pipe
 
-This is forked from https://github.com/QiCuiHub/discord-audio-pipe.
+This is forked from https://github.com/QiCuiHub/discord-audio-pipe.  Makes use of a modified version of [pyVBAN](https://github.com/TheStaticTurtle/pyVBAN).
 
 Program to send stereo audio (microphone, stereo mix, virtual audio cable, etc) into a Discord bot.
 

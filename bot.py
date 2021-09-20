@@ -11,32 +11,39 @@ class Dap_Bot(commands.Bot):
 		self.stream = None
 		# int device_id
 		self.device_id = -1
-		# discord.VoiceClient
+		# discord.VoiceClient voice
 		self.voice = None
+		# boolean use_vban
+		self.use_vban = False
 
 	def apply_config(self):
-		# device id
-		self.device_id = config.get_config_int("Audio", "device_id")
-		self.stream = sound.PCMStream()
-		self.stream.change_device(self.device_id)
+		self.use_vban = config.get_config_bool("Audio", "use_vban")
+		if self.use_vban:
+			self.stream = sound.VBANStream()
+		else:
+			# device id
+			self.device_id = config.get_config_int("Audio", "device_id")
+			self.stream = sound.PCMStream()
+			self.stream.change_device(self.device_id)
 
 	# params: int new_id
 	# return boolean
 	def change_device(self, new_id):
-		if new_id != self.device_id:
-			# sounddevice.DeviceList device_list
-			device_list = sound.query_devices()
-			# int device_count
-			device_count = len(device_list)
-			if new_id >= 0 and new_id < device_count:
-				self.device_id = new_id
-				self.stream.change_device(new_id)
-				config.set_config("Audio", "device_id", new_id)
-				print("Device {} selected".format(new_id))
-				return True
-			else:
-				print("Error: invalid device id or no devices available!")
-				return False
+		if not self.use_vban:
+			if new_id != self.device_id:
+				# sounddevice.DeviceList device_list
+				device_list = sound.query_devices()
+				# int device_count
+				device_count = len(device_list)
+				if new_id >= 0 and new_id < device_count:
+					self.device_id = new_id
+					self.stream.change_device(new_id)
+					config.set_config("Audio", "device_id", new_id)
+					print("Device {} selected".format(new_id))
+					return True
+				else:
+					print("Error: invalid device id or no devices available!")
+					return False
 
 	# params: float volume
 	# return: boolean
@@ -54,6 +61,8 @@ class Dap_Bot(commands.Bot):
 		self.voice.play(self.stream)
 		vol = config.get_config_float("Audio", "volume")
 		self.voice.source = discord.PCMVolumeTransformer(original=self.stream, volume=vol)
+		if self.use_vban:
+			self.stream.start_vban()
 
 	async def leave_voice_channel(self):
 		if self.voice is not None:

@@ -91,7 +91,7 @@ async def main(bot):
 
 # run program
 
-config.setup_config()
+config.setup_config("settings.cfg")
 # bot.Dap_Bot bot
 bot = bot.Dap_Bot('!')
 bot.case_insensitive = True

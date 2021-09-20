@@ -5,18 +5,23 @@ import asyncio
 config = None
 # asyncio.Task save_task
 save_task = None
+# str file_name
+file_name = ""
 
+# params: str cfg_file_name
 # return boolean
-def setup_config():
+def setup_config(cfg_file_name):
+	global file_name
+	file_name = cfg_file_name
 	# declare config for use within the function (Python, scope is a thing, bruh)
 	global config
 	config = configparser.ConfigParser()
-	config.read("settings.cfg")
+	config.read(file_name)
 	if config.sections == []:
-		print("settings.cfg is missing!  Cannot load!")
+		print("{} is missing!  Cannot load!".format(file_name))
 		return False
 	else:
-		print("settings.cfg successfully loaded")
+		print("{} successfully loaded".format(file_name))
 		return True
 
 # params: String section, String key
@@ -61,10 +66,11 @@ async def save_config():
 	global save_task
 	save_task = None
 
+	global file_name
 	# File config_file
-	config_file = open("settings.cfg", "w")
+	config_file = open(file_name, "w")
 	if config_file is not None:
 		config.write(config_file)
-		print("settings.cfg successfully saved")
+		print("{} successfully saved".format(file_name))
 	else:
-		print("settings.cfg is missing!  Cannot save!")
+		print("{} is missing!  Cannot save!".format(file_name))

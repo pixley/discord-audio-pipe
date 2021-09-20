@@ -1,5 +1,10 @@
 import discord
+import vban
+import collections
+import asyncio
+import config
 import sounddevice as sd
+import threading
 from pprint import pformat
 
 DEFAULT = 0
@@ -7,6 +12,118 @@ sd.default.channels = 2
 sd.default.dtype = "int16"
 sd.default.latency = "low"
 sd.default.samplerate = 48000
+
+class VBANStream(discord.AudioSource):
+	# int bytes_per_frame
+	# this is dictated by Discord
+	bytes_per_frame = 3840
+
+	def __init__(self):
+		discord.AudioSource.__init__(self)
+		# bytearray stream_buffer
+		# holds ten seconds of audio as a FIFO queue
+		# insert on right, remove on left
+		self.stream_buffer = bytearray()
+		# int sample_rate
+		self.sample_rate = sd.default.samplerate
+		# asyncio.Task recv_task
+		self.recv_task = None
+		# boolean verbose
+		self.verbose = config.get_config_bool("VBAN", "verbose")
+		# threading.Lock buffer_lock
+		self.buffer_lock = threading.Lock()
+
+	def read(self):
+		# int frame_len
+		frame_len = VBANStream.bytes_per_frame
+
+		self.buffer_lock.acquire()
+		# ENTER CRITICAL SECTION
+		if len(self.stream_buffer) >= frame_len:
+			# bytes frame
+			frame = bytes(self.stream_buffer[0:frame_len])
+			# remove the frame bytes from the buffer before returning
+			del self.stream_buffer[0:frame_len]
+			# int new_len
+			new_len = len(self.stream_buffer)
+			# END CRITICAL SECTION
+			self.buffer_lock.release()
+
+			if self.verbose:
+				print("Removing {} bytes from VBAN buffer".format(frame_len))
+				print("VBAN buffer now contains {} bytes".format(new_len))
+			return frame
+		else:
+			# END CRITICAL SECTION
+			self.buffer_lock.release()
+			# we don't have enough audio to present a 20 ms frame; return the corresponding amount of silence instead
+			if self.verbose:
+				print("Insufficient audio data in VBAN buffer; transmitting silence")
+			# the bytes(int) constructor creates a zero-filled object of length equal to the param
+			return bytes(frame_len)
+
+
+	# params: bytes raw_pcm
+	def write(self, raw_pcm):
+		self.buffer_lock.acquire()
+		# ENTER CRITICAL SECTION
+		self.stream_buffer += raw_pcm
+		# int new_len
+		new_len = len(self.stream_buffer)
+		# END CRITICAL SECTION
+		self.buffer_lock.release()
+
+		if self.verbose:
+			print("Adding {} bytes to VBAN buffer".format(len(raw_pcm)))
+			print("VBAN buffer now contains {} bytes".format(new_len))
+
+	def cleanup(self):
+		self.stop_vban()
+
+	def close(self):
+		# need close() to satisfy the interface VBAN_Recv expects, but we're doing the closure on this side (see cleanup()).
+		pass
+
+	# return: boolean
+	def is_opus(self):
+		return False
+
+	def start_vban(self):
+		print("Creating VBAN task...")
+		self.recv_task = asyncio.create_task(self.recv_vban())
+
+	def stop_vban(self):
+		if self.recv_task is not None:
+			print("Cancelling VBAN task...")
+			self.recv_task.cancel()
+			self.recv_task = None
+
+	async def recv_vban(self):
+		print("Initializing VBAN receiver...")
+		try:
+			# str ip
+			ip = config.get_config_string("VBAN", "incoming_ip")
+			# int port
+			port = config.get_config_int("VBAN", "incoming_port")
+			# str stream_name
+			stream_name = config.get_config_string("VBAN", "stream_name")
+
+			# vban.VBAN_Recv receiver
+			receiver = vban.VBAN_Recv(ip, stream_name, port, 0, verbose=self.verbose, stream=self)
+			print("VBAN receiver initalized on {}:{}!".format(ip, port))
+			try:
+				while True:
+					try:
+						receiver.runforever()
+					except IndexError:
+						# we have nothing left to receive; let's wait a bit
+						await asyncio.sleep(0)
+			except asyncio.CancelledError:
+				print("VBAN task cancelled!")
+				receiver.quit()
+				self.stream_buffer = bytearray()
+		except Exception as e:
+			print(e)
 
 
 class PCMStream(discord.AudioSource):
@@ -19,7 +136,6 @@ class PCMStream(discord.AudioSource):
 			print("Audio stream unavailable.")
 			return
 		
-		# frame is 4 bytes
 		# Discord reads 20 ms worth of audio at a time (20 ms * 50 == 1000 ms == 1 sec)
 		frames = int(self.stream.samplerate / 50)
 		data = self.stream.read(frames)[0]
