@@ -1,5 +1,6 @@
 import configparser
 import asyncio
+from os.path import exists
 
 # configparser.ConfigParser config
 config = None
@@ -13,16 +14,28 @@ file_name = ""
 def setup_config(cfg_file_name):
 	global file_name
 	file_name = cfg_file_name
+	# str use_file_name
+	use_file_name = file_name
 	# declare config for use within the function (Python, scope is a thing, bruh)
 	global config
 	config = configparser.ConfigParser()
-	config.read(file_name)
+	# if our config file doesn't already exist, load the default
+	# bool use_default
+	use_default = not exists(cfg_file_name)
+	if use_default:
+		use_file_name = cfg_file_name + ".default"
+
+	config.read(use_file_name)
 	if config.sections == []:
-		print("{} is missing!  Cannot load!".format(file_name))
+		print("{} is empty!  Cannot load!".format(use_file_name))
 		return False
 	else:
-		print("{} successfully loaded".format(file_name))
+		print("{} successfully loaded".format(Use_file_name))
 		return True
+
+	if use_default:
+		# write the defaults out to the regular cfg file
+		try_save()
 
 # params: String section, String key
 # return String
@@ -56,6 +69,9 @@ def set_config(section, key, value):
 	global config
 	config[section][key] = str(value)
 
+	try_save()
+
+def try_save():
 	# allow multiple config sets to be bundled into one save
 	global save_task
 	if save_task is None:

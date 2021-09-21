@@ -11,12 +11,12 @@ from discord.ext import commands
 # Bot commands
 # ------------
 
-# params: Discord.ext.commands.Context context, List[String] split_channel_name
+# params: Discord.ext.commands.Context context, List[str] split_channel_name
 @commands.command(brief="Joins a voice channel.", description="Joins the user's current voice channel or a specified channel.")
 async def join(context, *split_channel_name):
 	# int channel_id
 	channel_id = 0
-	# String channel_name
+	# str channel_name
 	channel_name = ""
 
 	if len(split_channel_name) == 0:
@@ -31,7 +31,7 @@ async def join(context, *split_channel_name):
 				channel_id = channel.id
 				channel_name = channel.name
 	else:
-		# String space_str
+		# str space_str
 		space_str = " "
 		channel_name = space_str.join(split_channel_name)
 		# Discord.Guild server
@@ -109,7 +109,9 @@ async def devices(context):
 # params: Discord.ext.commands.Context context, int device_id
 @commands.command(brief="Changes audio device.", description="Changes which audio device the bot is outputting from, based on indices presented in `!devices`")
 async def set_device(context, device_id: int):
-	if context.bot.change_device(device_id):
+	if context.bot.use_vban:
+		await context.send("VBAN mode does not use audio devices.")
+	elif context.bot.change_device(device_id):
 		await context.send("Now playing from device {}".format(device_id))
 	else:
 		await context.send("Error: !set_device requires a valid device id.  Call !devices for a list of valid devices.")
@@ -127,35 +129,42 @@ async def status(context):
 	# Discord.VoiceChannel channel
 	channel = get_current_voice_channel(context)
 	if channel is not None:
-		message = message + "\nConnected to voice channel {}".format(channel.name)
+		message = message + "\nConnected to voice channel \"{}\"".format(channel.name)
 	else:
 		message = message + "\nNot currently connected to a voice channel."
 
-	# Get current audio device
-	try:
-		# dict device
-		device = sound.get_device(context.bot.device_id)
-		message = message + "\nCurrent audio device is [{}] {}".format(context.bot.device_id, device["name"])
-	except DeviceNotFoundError:
-		logging.exception("Error: exception in sound.get_device()")
-		message = message + "\nInvalid audio device.  Please check the list of audio devices with !devices and set a new one using !set_device."
-
-	# Check watched process
-	# String process_name
-	process_name = config.get_config_string("System", "watched_process_name")
-	if process_name == "":
-		message = message + "\nNo watched process."
+	if context.bot.use_vban:
+		message = message + "\nRunning in VBAN mode.  Listening for stream \"{}\"".format(config.get_config_string("VBAN", "stream_name"))
 	else:
-		if check_process(process_name):
-			message = message + "\nProcess {} is running.".format(process_name)
+		# Get current audio device
+		try:
+			# dict device
+			device = sound.get_device(context.bot.device_id)
+			message = message + "\nCurrent audio device is [{}] {}".format(context.bot.device_id, device["name"])
+		except DeviceNotFoundError:
+			logging.exception("Error: exception in sound.get_device()")
+			message = message + "\nInvalid audio device.  Please check the list of audio devices with !devices and set a new one using !set_device."
+
+		# Check watched process
+		# String process_name
+		process_name = config.get_config_string("System", "watched_process_name")
+		if process_name == "":
+			message = message + "\nNo watched process."
 		else:
-			message = message + "\nNo running process named {}".format(process_name)
+			if check_process(process_name):
+				message = message + "\nProcess \"{}\"" is running.".format(process_name)
+			else:
+				message = message + "\nNo running process named \"{}\"".format(process_name)
 
 	await context.send(message)
 
-#params: Discord.ext.commands.Context context, String process_name
+#params: Discord.ext.commands.Context context, str process_name
 @commands.command(brief="Changes watched process.", description="Sets the watched process to the specified name.  You can use `!status` to see that process's status.")
 async def watch(context, process_name: typing.Optional[str]):
+	if context.bot.use_vban:
+		await context.send("Watched process is not supported in VBAN mode.")
+		return
+	
 	print("Watched process changed to {}".format(process_name))
 	if process_name is None:
 		config.set_config("System", "watched_process_name", "")
@@ -163,12 +172,30 @@ async def watch(context, process_name: typing.Optional[str]):
 	else:
 		config.set_config("System", "watched_process_name", process_name)
 		# String message
-		message = "Now watching process {}.".format(process_name)
+		message = "Now watching process \"{}\".".format(process_name)
 		if (check_process(process_name)):
 			message = message + "  It is active."
 		else:
 			message = message + "  It is not active."
 		await context.send(message)
+
+# params: Discord.ext.commands.Context context, str new_ip
+@commands.command(brief="Changes VBAN source IP and stream name.", description="Changes which IP address to listen from and stream identifier when running in VBAN mode.")
+async def vban_change_stream(context, new_ip, stream_name: typing.Optional[str]):
+	if context.bot.use_vban:
+		config.set_config("VBAN", "incoming_ip", new_ip)
+		if stream_name is not None:
+			config.set_config("VBAN", "stream_name", stream_name)
+		context.bot.reset_stream()
+
+		# str output_name
+		output_name = stream_name
+		if output_name is None:
+			output_name = config.get_config_string("VBAN", "stream_name")
+
+		await context.send("Now listening to {} on stream \"{}\"".format(new_ip, output_name))
+	else:
+		await context.send("Not running in VBAN mode.")
 
 # ----------------
 # End bot commands

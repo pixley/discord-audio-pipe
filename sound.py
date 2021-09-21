@@ -15,8 +15,11 @@ sd.default.samplerate = 48000
 
 class VBANStream(discord.AudioSource):
 	# int bytes_per_frame
-	# this is dictated by Discord
+	# this is dictated by Discord; each frame is 20 ms
 	bytes_per_frame = 3840
+	# int bytes_per_sec
+	# 4 bytes per sample (stereo 16-bit audio)
+	bytes_per_sec = bytes_per_frame * 50
 
 	def __init__(self):
 		discord.AudioSource.__init__(self)
@@ -32,6 +35,14 @@ class VBANStream(discord.AudioSource):
 		self.verbose = config.get_config_bool("VBAN", "verbose")
 		# threading.Lock buffer_lock
 		self.buffer_lock = threading.Lock()
+		# bool buffering
+		self.buffering = False
+		# float buffering_min
+		# if the buffer has less than this many seconds worth of audio data, buffering will be enabled
+		self.buffering_min = config.get_config_float("VBAN", "buffering_min")
+		# float buffering_max
+		# if we are buffering, when the buffer reaches this many seconds worth of audio data, buffering will be disabled
+		self.buffering_max = config.get_config_float("VBAN", "buffering_max")
 
 	def read(self):
 		# int frame_len
@@ -39,7 +50,24 @@ class VBANStream(discord.AudioSource):
 
 		self.buffer_lock.acquire()
 		# ENTER CRITICAL SECTION
-		if len(self.stream_buffer) >= frame_len:
+		# int buffer_len
+		buffer_len = len(self.stream_buffer)
+
+		# enforce buffer constraints
+		if buffering and buffer_len > int(bytes_per_sec * self.buffering_max):
+			buffering = False
+		elif not buffering and buffer_len < int(bytes_per_sec * self.buffering_min):
+			buffering = True
+
+		if buffering:
+			# END CRITICAL SECTION
+			self.buffer_lock.release()
+			# we don't have enough audio to present a 20 ms frame; return the corresponding amount of silence instead
+			if self.verbose:
+				print("Insufficient audio data in VBAN buffer; transmitting silence")
+			# the bytes(int) constructor creates a zero-filled object of length equal to the param
+			return bytes(frame_len)
+		else:
 			# bytes frame
 			frame = bytes(self.stream_buffer[0:frame_len])
 			# remove the frame bytes from the buffer before returning
@@ -53,14 +81,6 @@ class VBANStream(discord.AudioSource):
 				print("Removing {} bytes from VBAN buffer".format(frame_len))
 				print("VBAN buffer now contains {} bytes".format(new_len))
 			return frame
-		else:
-			# END CRITICAL SECTION
-			self.buffer_lock.release()
-			# we don't have enough audio to present a 20 ms frame; return the corresponding amount of silence instead
-			if self.verbose:
-				print("Insufficient audio data in VBAN buffer; transmitting silence")
-			# the bytes(int) constructor creates a zero-filled object of length equal to the param
-			return bytes(frame_len)
 
 
 	# params: bytes raw_pcm
