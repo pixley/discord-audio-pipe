@@ -56,7 +56,7 @@ class VBANStream(discord.AudioSource):
 		# enforce buffer constraints
 		if self.buffering and buffer_len > int(VBANStream.bytes_per_sec * self.buffering_max):
 			self.buffering = False
-		elif not buffering and buffer_len < int(VBANStream.bytes_per_sec * self.buffering_min):
+		elif not self.buffering and buffer_len < int(VBANStream.bytes_per_sec * self.buffering_min):
 			self.buffering = True
 
 		if self.buffering:
