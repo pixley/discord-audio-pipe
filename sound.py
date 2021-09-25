@@ -137,7 +137,7 @@ class VBANStream(discord.AudioSource):
 						receiver.runforever()
 					except IndexError:
 						# we have nothing left to receive; let's wait a bit
-						await asyncio.sleep(0)
+						await asyncio.sleep(0.02)
 			except asyncio.CancelledError:
 				print("VBAN task cancelled!")
 				receiver.quit()

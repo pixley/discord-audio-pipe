@@ -11,8 +11,8 @@ incoming_ip = 127.0.0.1
 incoming_port = 6980
 stream_name = example
 verbose = False
-buffering_min = 1.5
-buffering_max = 5.0
+buffering_min = 0.1
+buffering_max = 0.3
 
 [Commands]
 role_whitelist = everyone

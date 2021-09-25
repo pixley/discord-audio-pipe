@@ -7,3 +7,4 @@ main.py
 build/main
 .vscode
 *.cfg
+*.profile
