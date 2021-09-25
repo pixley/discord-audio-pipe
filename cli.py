@@ -181,7 +181,7 @@ async def status(context):
 			message = message + "\nNo watched process."
 		else:
 			if check_process(process_name):
-				message = message + "\nProcess \"{}\"" is running.".format(process_name)
+				message = message + "\nProcess \"{}\" is running.".format(process_name)
 			else:
 				message = message + "\nNo running process named \"{}\"".format(process_name)
 
