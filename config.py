@@ -30,7 +30,7 @@ def setup_config(cfg_file_name):
 		print("{} is empty!  Cannot load!".format(use_file_name))
 		return False
 	else:
-		print("{} successfully loaded".format(Use_file_name))
+		print("{} successfully loaded".format(use_file_name))
 		return True
 
 	if use_default:
