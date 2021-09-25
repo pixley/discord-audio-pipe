@@ -54,12 +54,12 @@ class VBANStream(discord.AudioSource):
 		buffer_len = len(self.stream_buffer)
 
 		# enforce buffer constraints
-		if buffering and buffer_len > int(bytes_per_sec * self.buffering_max):
-			buffering = False
-		elif not buffering and buffer_len < int(bytes_per_sec * self.buffering_min):
-			buffering = True
+		if self.buffering and buffer_len > int(VBANStream.bytes_per_sec * self.buffering_max):
+			self.buffering = False
+		elif not buffering and buffer_len < int(VBANStream.bytes_per_sec * self.buffering_min):
+			self.buffering = True
 
-		if buffering:
+		if self.buffering:
 			# END CRITICAL SECTION
 			self.buffer_lock.release()
 			# we don't have enough audio to present a 20 ms frame; return the corresponding amount of silence instead
