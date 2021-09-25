@@ -7,6 +7,37 @@ import psutil
 import typing
 from discord.ext import commands
 
+# -------------------------
+# Bot command global checks
+# -------------------------
+
+# params: Discord.ext.commands.Context context
+@commands.check
+async def no_dms(context):
+	return context.guild is not None
+
+# params: Discord.ext.commands.Context context
+@commands.check
+async def role_whitelist(context):
+	# always allow admin users to control the bot
+	for role in context.author.roles:
+		if role.permissions.administrator:
+			return True
+
+	# List[str] allowed_roles
+	allowed_roles = config.get_config_str_list("Commands", "role_whitelist")
+	if "everyone" in allowed_roles:
+		return True
+
+	# Set[str] role_set
+	# For more optimized access
+	role_set = set(allowed_roles)
+	for role in context.author.roles:
+		if role.name in role_set:
+			return True
+
+	return False
+
 # ------------
 # Bot commands
 # ------------
@@ -31,9 +62,7 @@ async def join(context, *split_channel_name):
 				channel_id = channel.id
 				channel_name = channel.name
 	else:
-		# str space_str
-		space_str = " "
-		channel_name = space_str.join(split_channel_name)
+		channel_name = " ".join(split_channel_name)
 		# Discord.Guild server
 		server = context.guild
 		# List[Discord.VoiceChannel] channels
@@ -197,6 +226,41 @@ async def vban_change_stream(context, new_ip, stream_name: typing.Optional[str])
 	else:
 		await context.send("Not running in VBAN mode.")
 
+# params: Discord.ext.commands.Context context
+@commands.command(brief="Shows roles with command permission.", description="Returns a list of roles that can issue commands to the bot.")
+async def roles(context):
+	print("Whitelist requested.")
+
+	# List[str] allowed_roles
+	allowed_roles = config.get_config_str_list("Commands", "role_whitelist")
+	# str message
+	message = "Command role whitelist:"
+
+	for role in allowed_roles:
+		message = message + "\n" + role
+
+	await context.send(message)
+
+# params: Discord.ext.commands.Context context, List[str] split_role_name
+@commands.command(brief="Gives role bot command rights.", description="Adds the given role name to the command whitelist.")
+async def add_role(context, *split_role_name):
+	# str role_name
+	role_name = " ".join(split_role_name)
+	if config.config_list_add("Commands", "role_whitelist", role_name):
+		await context.send("Role \"{}\" added to whitelist.".format(role_name))
+	else:
+		await context.send("Error adding role \"{}\" to whitelist.  It may already be present.".format(role_name))
+
+# params: Discord.ext.commands.Context context, List[str] split_role_name
+@commands.command(brief="Revokes role bot command rights.", description="Removes the given role name from the command whitelist.")
+async def remove_role(context, *split_role_name):
+	# str role_name
+	role_name = " ".join(split_role_name)
+	if config.config_list_remove("Commands", "role_whitelist", role_name):
+		await context.send("Role \"{}\" removed from whitelist.".format(role_name))
+	else:
+		await context.send("Error removing role \"{}\" from whitelist.  It may not have been there to begin with.".format(role_name))
+
 # ----------------
 # End bot commands
 # ----------------
@@ -226,6 +290,9 @@ def check_process(process_name):
 
 # params: bot.Dap_Bot bot
 def add_commands(bot):
+	bot.add_check(no_dms)
+	bot.add_check(role_whitelist)
+
 	bot.add_command(join)
 	bot.add_command(leave)
 	bot.add_command(volume)
@@ -233,6 +300,10 @@ def add_commands(bot):
 	bot.add_command(set_device)
 	bot.add_command(status)
 	bot.add_command(watch)
+	bot.add_command(vban_change_stream)
+	bot.add_command(roles)
+	bot.add_command(add_role)
+	bot.add_command(remove_role)
 
 # params: bot.Dap_Bot bot
 async def connect(bot):

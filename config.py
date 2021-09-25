@@ -37,8 +37,8 @@ def setup_config(cfg_file_name):
 		# write the defaults out to the regular cfg file
 		try_save()
 
-# params: String section, String key
-# return String
+# params: str section, str key
+# return str
 def get_config(section, key):
 	if config is not None:
 		return config[section][key]
@@ -48,22 +48,107 @@ def get_config(section, key):
 # alias for readability's sake
 get_config_string = get_config
 
-# params: String section, String key
+# params: str section, str key
 # return float
 def get_config_float(section, key):
 	return float(get_config(section, key))
 
-# params: String section, String key
+# params: str section, str key
 # return int
 def get_config_int(section, key):
 	return int(get_config(section, key))
 
-# params: String section, String key
+# params: str section, str key
 # return boolean
 def get_config_bool(section, key):
 	return config.getboolean(section, key)
 
-# params: String section, String key, ??? value
+# params: str section, str key
+# return List[str]
+def get_config_list(section, key):
+	# str raw_str
+	raw_str = get_config(section, key)
+	return raw_str.split(',')
+
+# alias for readability's sake
+get_config_str_list = get_config_list
+
+# params: str section, str key
+# return List[int]
+def get_config_int_list(section, key):
+	return list(map(int, get_config_list(section, key)))
+
+# params: str section, str key
+# return List[float]
+def get_config_float_list(section, key):
+	return list(map(float, get_config_list(section, key)))
+
+# params: str section, str key
+# return List[boolean]
+def get_config_bool_list(section, key):
+	return list(map(convert_to_bool, get_config_list(section, key)))
+
+# params: str section, str key, ??? value
+# return boolean
+def config_list_add(section, key, value):
+	# str value_str
+	value_str = str(value)
+
+	# str list_str
+	list_str = get_config(section, key)
+
+	if len(list_str) == 0:
+		# nothing's in there, so we can just set the list to be the one new element
+		set_config(section, key, value_str)
+		return True
+	else:
+		if list_str.find(value_str) == -1:
+			list_str = list_str + ',' + value_str
+			set_config(section, key, value_str)
+			return True
+		else:
+			print("Attention: Value \"{}\" is already in [{}] {}.".format(value_str, section, key))
+			return False
+
+# params: str section, str key, ??? value
+# return boolean
+def config_list_remove(section, key, value):
+	# str value_str
+	value_str = str(value)
+
+	# str list_str
+	list_str = get_config(section, key)
+
+	if len(list_str) == 0:
+		print("Attention: Cannot remove value \"{}\" from empty list [{}] {}.".format(value_str, section, key))
+		return False
+	elif list_str == value_str:
+		list_str = ""
+		set_config(section, key, list_str)
+		return True
+	else:
+		# int substr_idx
+		substr_idx = list_str.find(value_str)
+		if substr_idx != -1:
+			if substr_idx + len(value_str) == len(list_str) - 1:
+				list_str = list_str.replace(value_str, "")
+			else:
+				list_str = list_str.replace(value_str + ',', "")
+			set_config(section, key, list_str)
+			return True
+		else:
+			print("Attention: Cannot remove value \"{}\" from [{}] {} because the list doesn't contain it.".format(value_str, section, key))
+			return False
+
+# params: str value
+# return boolean
+# copy of ConfigParser._convert_to_boolean()
+def convert_to_bool(value):
+	if value.lower() not in config.BOOLEAN_STATES:
+		raise ValueError('Not a boolean: %s' % value)
+	return config.BOOLEAN_STATES[value.lower()]
+
+# params: str section, str key, ??? value
 def set_config(section, key, value):
 	# stupid Python global nonsense...
 	global config

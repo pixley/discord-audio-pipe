@@ -13,3 +13,6 @@ stream_name = example
 verbose = False
 buffering_min = 1.5
 buffering_max = 5.0
+
+[Commands]
+role_whitelist = everyone
