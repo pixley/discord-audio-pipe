@@ -6,3 +6,5 @@ token.txt
 main.py
 build/main
 .vscode
+discord.profile
+*.json
