@@ -1,0 +1,18 @@
+[System]
+watched_process_name = 
+
+[Audio]
+volume = 0.5
+device_id = 0
+use_vban = True
+
+[VBAN]
+incoming_ip = 127.0.0.1
+incoming_port = 6980
+stream_name = example
+verbose = False
+buffering_min = 0.1
+buffering_max = 0.3
+
+[Commands]
+role_whitelist = everyone

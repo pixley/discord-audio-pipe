@@ -18,6 +18,9 @@ class Dap_Bot(commands.Bot):
 
 	def apply_config(self):
 		self.use_vban = config.get_config_bool("Audio", "use_vban")
+		self.start_stream()
+
+	def start_stream(self):
 		if self.use_vban:
 			self.stream = sound.VBANStream()
 		else:
@@ -68,3 +71,10 @@ class Dap_Bot(commands.Bot):
 		if self.voice is not None:
 			await self.voice.disconnect()
 			self.voice = None
+
+	def reset_stream(self):
+		if self.stream is not None:
+			self.stream.cleanup()
+		if self.voice is not None and self.voice.source is not None:
+			start_stream()
+			self.voice.source.original = self.stream()
