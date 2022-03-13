@@ -16,3 +16,36 @@ buffering_max = 0.3
 
 [Commands]
 role_whitelist = everyone
+
+[Rolls]
+untrained_aliases = u,untrained,0,unt,un
+trained_aliases = t,trained,2,tra,trn
+expert_aliases = e,x,expert,4,exp,ex
+master_aliases = m,master,6,mas
+legendary_aliases = l,legendary,8,legend,leg
+valid_checks = perception,ac,fort,ref,will,acrobatics,arcana,athletics,crafting,deception,diplomacy,intimidation,medicine,nature,occultism,performance,religion,society,stealth,survival,thievery
+valid_abilities = str,dex,con,int,wis,cha
+result_message_timeout = 600
+
+[Rolls-CheckAbilities]
+perception = wis
+ac = dex
+fort = con
+ref = dex
+will = wis
+acrobatics = dex
+arcana = int
+athletics = str
+crafting = int
+deception = cha
+diplomacy = cha
+intimidation = cha
+medicine = wis
+nature = wis
+occultism = int
+performance = cha
+religion = wis
+society = int
+stealth = dex
+survival = wis
+thievery = dex

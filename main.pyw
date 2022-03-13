@@ -21,6 +21,7 @@ import asyncio
 import discord
 import argparse
 from discord.ext import commands
+import secret_rolls as sroll
 
 # commandline args
 parser = argparse.ArgumentParser(description="Discord Audio Pipe")
@@ -92,6 +93,7 @@ async def main(bot):
 # run program
 
 config.setup_config("settings.cfg")
+sroll.setup()
 # bot.Dap_Bot bot
 bot = bot.Dap_Bot('!')
 bot.case_insensitive = True
