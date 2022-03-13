@@ -19,7 +19,7 @@ Program to send stereo audio (microphone, stereo mix, virtual audio cable, etc) 
 2. To link the program to your bot, create a file ``token.txt`` in the same directory as `main.pyw` and save the bot token inside
 
 ## Dependencies
-Requires Python 3.8+. Install dependencies by running `pip3 install -r requirements.txt`
+Requires Python 3.9+. Install dependencies by running `pip3 install -r requirements.txt`
 
 In some cases PortAudio, xcb, and ffmpeg libraries may be missing on linux. On Ubuntu, they can be installed with
 ```
