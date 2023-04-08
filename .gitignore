@@ -9,3 +9,4 @@ build/main
 *.json
 *.cfg
 *.profile
+*.out
