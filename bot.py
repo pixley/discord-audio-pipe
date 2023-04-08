@@ -5,8 +5,8 @@ import config
 from discord.ext import commands
 
 class Dap_Bot(commands.Bot):
-	def __init__(self, command_prefix):
-		commands.Bot.__init__(self, command_prefix)
+	def __init__(self, command_prefix, intents):
+		commands.Bot.__init__(self, command_prefix, intents)
 		# discord.AudioSource stream
 		self.stream = None
 		# int device_id
