@@ -75,6 +75,8 @@ async def main(bot):
 				return
 			token_file.close()
 
+		await cli.add_commands(bot)
+
 		asyncio.create_task(cli.connect(bot))
 
 		# log in and connect
@@ -95,15 +97,13 @@ async def main(bot):
 config.setup_config("settings.cfg")
 sroll.setup()
 # bot.Dap_Bot bot
-bot = bot.Dap_Bot('!')
+bot = bot.Dap_Bot('!', intents=discord.Intents.all)
 bot.case_insensitive = True
 
 loop = asyncio.get_event_loop_policy().get_event_loop()
 
 #apply config
 bot.apply_config()
-
-cli.add_commands(bot)
 
 try:
 	loop.run_until_complete(main(bot))

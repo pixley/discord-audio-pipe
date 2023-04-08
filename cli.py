@@ -396,12 +396,12 @@ def check_process(process_name):
 	return success
 
 # params: bot.Dap_Bot bot
-def add_commands(bot):
+async def add_commands(bot):
 	bot.add_check(no_dms)
 	bot.add_check(role_whitelist)
 
-	bot.add_cog(VoiceCog(bot))
-	bot.add_cog(SecretRollCog(bot))
+	await bot.add_cog(VoiceCog(bot))
+	await bot.add_cog(SecretRollCog(bot))
 
 # params: bot.Dap_Bot bot
 async def connect(bot):
