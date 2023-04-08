@@ -98,7 +98,7 @@ sroll.setup()
 bot = bot.Dap_Bot('!')
 bot.case_insensitive = True
 
-loop = asyncio.new_event_loop()
+loop = asyncio.get_event_loop_policy().get_event_loop()
 
 #apply config
 bot.apply_config()
