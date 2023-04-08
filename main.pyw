@@ -100,7 +100,7 @@ sroll.setup()
 bot = bot.Dap_Bot('!', intents=discord.Intents.all)
 bot.case_insensitive = True
 
-loop = asyncio.get_event_loop()
+loop = asyncio.get_event_loop_policy().get_event_loop()
 
 #apply config
 bot.apply_config()
