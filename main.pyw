@@ -108,8 +108,11 @@ loop.create_task(cli.connect(bot))
 try:
 	loop.run_until_complete(main(bot))
 except KeyboardInterrupt:
-	print("Exiting...")
-	loop.run_until_complete(bot.close())
-	# this sleep prevents a bugged exception on Windows
-	loop.run_until_complete(asyncio.sleep(1))
-	loop.close()
+	print("Received keyboard interrupt!")
+except Exception as e:
+	print(e)
+print("Exiting...")
+loop.run_until_complete(bot.close())
+# this sleep prevents a bugged exception on Windows
+loop.run_until_complete(asyncio.sleep(1))
+loop.close()
