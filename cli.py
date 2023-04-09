@@ -402,14 +402,3 @@ async def add_commands(bot):
 
 	await bot.add_cog(VoiceCog(bot))
 	await bot.add_cog(SecretRollCog(bot))
-
-# params: bot.Dap_Bot bot
-async def connect(bot):
-	try:
-		print("Connecting to Discord...")
-		await bot.wait_until_ready()
-		print("Logged in to Discord as {}!".format(bot.user.name))
-
-	except Exception:
-		logging.exception("Error on cli connect")
-		sys.exit(1)

@@ -78,6 +78,7 @@ async def main(bot):
 		await cli.add_commands(bot)
 
 		# log in and connect
+		print("Logging into Discord...")
 		await bot.start(token)
 
 	except FileNotFoundError:
@@ -98,12 +99,14 @@ sroll.setup()
 bot = bot.Dap_Bot('!', intents=discord.Intents.all())
 bot.case_insensitive = True
 
+@bot.event
+async def on_ready():
+	print("Logged in to Discord as {}!".format(bot.user.name))
+
 loop = asyncio.get_event_loop_policy().get_event_loop()
 
 #apply config
 bot.apply_config()
-
-loop.create_task(cli.connect(bot))
 
 try:
 	loop.run_until_complete(main(bot))
