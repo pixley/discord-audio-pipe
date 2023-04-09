@@ -97,7 +97,7 @@ async def main(bot):
 config.setup_config("settings.cfg")
 sroll.setup()
 # bot.Dap_Bot bot
-bot = bot.Dap_Bot('!', intents=discord.Intents.all)
+bot = bot.Dap_Bot('!', intents=discord.Intents.all())
 bot.case_insensitive = True
 
 loop = asyncio.get_event_loop_policy().get_event_loop()
