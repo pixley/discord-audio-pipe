@@ -77,8 +77,6 @@ async def main(bot):
 
 		await cli.add_commands(bot)
 
-		asyncio.create_task(cli.connect(bot))
-
 		# log in and connect
 		await bot.start(token)
 
@@ -104,6 +102,8 @@ loop = asyncio.get_event_loop_policy().get_event_loop()
 
 #apply config
 bot.apply_config()
+
+loop.create_task(cli.connect(bot))
 
 try:
 	loop.run_until_complete(main(bot))
