@@ -109,7 +109,24 @@ loop = asyncio.get_event_loop_policy().get_event_loop()
 bot.apply_config()
 
 if not discord.opus.is_loaded():
-	discord.opus.load_opus("libopus.so.1")
+	print("Need to load Opus libraries...")
+	
+	opus_lib_str = ctypes.util.find_library("opus")
+	if opus_lib_str is None:
+		# fallback suggested by discord.py's docs
+		opus_lib_str = "libopus.so.1"
+		print("Could not find libopus - using fallback")
+	else:
+		print("libopus found: {}".format(opus_lib_str))
+		
+	print("Attempting to load Opus libraries...")
+	try:
+		discord.opus.load_opus(opus_lib_str)
+		print("Opus libraries successfully loaded!")
+	except:
+		print("Could not load libopus...  Audio unlikely to function.")
+else:
+	print("Opus libraries loaded automatically!")
 
 try:
 	loop.run_until_complete(main(bot))
