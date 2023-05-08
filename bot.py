@@ -25,6 +25,7 @@ class Dap_Bot(commands.Bot):
 	
 		if self.use_vban:
 			self.stream = sound.VBANStream()
+			self.stream.start_vban()
 		else:
 			# device id
 			self.device_id = config.get_config_int("Audio", "device_id")
