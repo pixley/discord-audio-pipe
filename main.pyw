@@ -12,7 +12,7 @@ error_handler.setFormatter(error_formatter)
 base_logger = logging.getLogger()
 base_logger.addHandler(error_handler)
 
-from ctypes import util
+from ctypes.util import find_library
 import sys
 import cli
 import sound
@@ -112,7 +112,7 @@ bot.apply_config()
 if not discord.opus.is_loaded():
 	print("Need to load Opus libraries...")
 	
-	opus_lib_str = ctypes.util.find_library("opus")
+	opus_lib_str = find_library("opus")
 	if opus_lib_str is None:
 		# fallback suggested by discord.py's docs
 		opus_lib_str = "libopus.so.1"
