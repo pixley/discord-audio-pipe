@@ -12,6 +12,7 @@ error_handler.setFormatter(error_formatter)
 base_logger = logging.getLogger()
 base_logger.addHandler(error_handler)
 
+from ctypes import util
 import sys
 import cli
 import sound
