@@ -219,8 +219,11 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 			output_name = stream_name
 			if output_name is None:
 				output_name = config.get_config_string("VBAN", "stream_name")
-
-			await context.send("Now listening to {} on stream \"{}\"".format(new_ip, output_name))
+			
+			if context.bot.voice is not None:
+				await context.send("Audio stream reset: now listening to {} on stream \"{}\"".format(new_ip, output_name))
+			else:
+				await context.send("Stream IP is now {}, with stream \"{}\"".format(new_ip, output_name))
 		else:
 			await context.send("Not running in VBAN mode.")
 
