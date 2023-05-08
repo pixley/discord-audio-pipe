@@ -33,7 +33,10 @@ class Dap_Bot(commands.Bot):
 			
 		# float vol	
 		vol = config.get_config_float("Audio", "volume")
-			
+		
+		if self.voice.is_playing():
+			self.voice.stop()
+		
 		self.voice.play(self.stream)
 		self.voice.source = discord.PCMVolumeTransformer(original=self.stream, volume=vol)
 

@@ -108,6 +108,9 @@ loop = asyncio.get_event_loop_policy().get_event_loop()
 #apply config
 bot.apply_config()
 
+if not discord.opus.is_loaded():
+	discord.opus.load_opus("libopus.so.1")
+
 try:
 	loop.run_until_complete(main(bot))
 except KeyboardInterrupt:
