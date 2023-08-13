@@ -283,10 +283,9 @@ class ChatCog(commands.Cog, name="Chat Commands"):
 		# str message
 		message = "@here " + " ".join(split_message)
 		try:
-			# determine how 
+			# determine how long in the future to post the message
 			# datetime.datetime post_datetime
-			post_datetime = config.parse_datetime(date, time)
-			post_datetime.tzinfo = zoneinfo.ZoneInfo(config.get_config_string("Time", "timezone"))
+			post_datetime = config.parse_datetime(date, time).replace(tzinfo=zoneinfo.ZoneInfo(config.get_config_string("Time", "timezone")))
 			# str post_datetime_str
 			post_datetime_str = post_datetime.strftime("%a %d %b %Y, %I:%M%p")
 			# datetime.datetime utc_now
