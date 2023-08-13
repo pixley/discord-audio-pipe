@@ -293,7 +293,7 @@ class ChatCog(commands.Cog, name="Chat Commands"):
 			# datetime.timedelta delta_time
 			delta_time = post_datetime - utc_now
 			# really don't care about sub-second time resolution here
-			delta_time.microseconds = 0
+			delta_time = delta_time - datetime.timedelta(microseconds=delta_time.microseconds)
 			# int delta_sec
 			delta_sec = delta_time.total_seconds()
 			if delta_sec < 0:
