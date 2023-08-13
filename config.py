@@ -190,7 +190,7 @@ def parse_datetime(date: str, time: str):
 	valid_formats = get_config_str_list("Time", "datetime_formats")
 	for dt_format in valid_formats:
 		try:
-			test_dt = datetime.strptime(concat_dt, dt_format)
+			test_dt = datetime.datetime.strptime(concat_dt, dt_format)
 			return test_dt
 		except ValueError:
 			# strftime() throws this if the input string doesn't fit the format
