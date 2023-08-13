@@ -280,6 +280,17 @@ class ChatCog(commands.Cog, name="Chat Commands"):
 			return
 		# int target_channel_id
 		target_channel_id = int(channel[2:-1])
+		# discord.abc.GuildChannel actual_channel
+		actual_channel = current_server.get_channel(target_channel_id)
+		if actual_channel is None:
+			await context.send("Error: Channel does not exist on this server.")
+			return
+		if not isinstance(actual_channel, discord.TextChannel):
+			await context.send("Error: Channel is not a text channel.")
+			return
+		if not actual_channel.permissions_for(context.bot.me).send_messages:
+			await context.send("Error: This bot does not have permission to post in that channel.")
+			return
 		# str message
 		message = "@here " + " ".join(split_message)
 		try:
