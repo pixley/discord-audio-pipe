@@ -14,6 +14,10 @@ verbose = False
 buffering_min = 0.1
 buffering_max = 0.3
 
+[Time]
+timezone = UTC
+datetime_formats = %m/%d/%y %I:%M%p,%m/%d/%y %H:%M,%m/%d/%Y %I:%M%p,%m/%d/%Y %H:%M,%d.$m.%y %H:%M
+
 [Commands]
 role_whitelist = everyone
 

@@ -1,6 +1,7 @@
 import configparser
 import asyncio
 from os.path import exists
+import zoneinfo
 
 # configparser.ConfigParser config
 config = None
@@ -8,6 +9,8 @@ config = None
 save_task = None
 # str file_name
 file_name = ""
+# set[str] valid_time_zones
+valid_time_zones = None
 
 # params: str cfg_file_name
 # return boolean
@@ -36,6 +39,9 @@ def setup_config(cfg_file_name):
 	if use_default:
 		# write the defaults out to the regular cfg file
 		try_save()
+
+	global valid_time_zones
+	valid_time_zones = zoneinfo.available_timezones()
 
 # params: str section, str key
 # return str
@@ -175,3 +181,19 @@ async def save_config():
 		print("{} successfully saved".format(file_name))
 	else:
 		print("{} is missing!  Cannot save!".format(file_name))
+
+# params: str date, str time
+# return datetime.DateTime
+def parse_datetime(date: str, time: str):
+	concat_dt = date + " " + time
+	valid_formats = get_config_str_list("Time", "datetime_formats")
+	for dt_format in valid_formats:
+		try:
+			test_dt = datetime.strftime(concat_dt, dt_format)
+			return test_dt
+		except ValueError:
+			# strftime() throws this if the input string doesn't fit the format
+			# we're okay with this because we're testing multiple formats
+			continue
+
+	raise ValueError("Invalid date format!")

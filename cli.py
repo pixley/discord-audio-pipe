@@ -8,6 +8,8 @@ import typing
 import string
 from discord.ext import commands
 import secret_rolls as sroll
+import datetime
+import zoneinfo
 
 # -------------------------
 # Bot command global checks
@@ -260,6 +262,85 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 			await context.send("Error removing role \"{}\" from whitelist.  It may not have been there to begin with.".format(role_name))
 
 # ----------------
+# Chat commands
+# ----------------
+class ChatCog(commands.Cog, name="Chat Commands"):
+	def __init__(self, bot: commands.Bot):
+		self.bot = bot
+
+	@commands.command(brief="Sends a message at a specific time.", description="Sends a message to the specified channel at a specified time and date, using the set time zone.  An at-here is automatically applied.")
+	async def schedule_post(self, context, channel: str, time: str, date: str, *split_message):
+		if not channel.startswith("#"):
+			await context.send("Error: Please use the \"#\" prefix with the channel name.")
+			return
+		# discord.Guild current_server
+		current_server = context.guild
+		if current_server is None:
+			await context.send("Error: This command cannot be invoked outside of a server.")
+			return
+		# int target_channel_id
+		target_channel_id = -1
+		for server_channel in current_server.channels:
+			if server_channel.name == channel:
+				if not isinstance(server_channel, discord.TextChannel):
+					await context.send("Error: Requested channel is not a text channel.")
+					return
+				target_channel_id = server_channel.id
+		if target_channel_id == -1:
+			await context.send("Error: Channel {} does not exist on this server.".format(channel))
+			return
+		# str message
+		message = "@here " + " ".join(split_message)
+		try:
+			# determine how 
+			# datetime.datetime post_datetime
+			post_datetime = config.parse_datetime(date, time)
+			post_datetime.tzinfo = zoneinfo.ZoneInfo(config.get_config_string("Time", "timezone"))
+			# str post_datetime_str
+			post_datetime_str = post_datetime.strftime("%a %d %b %Y, %I:%M%p")
+			# datetime.datetime utc_now
+			utc_now = datetime.datetime.now(datetime.timezone.utc)
+			# datetime.timedelta delta_time
+			delta_time = post_datetime - utc_now
+			# int delta_sec
+			delta_sec = delta_time.total_seconds()
+			if delta_sec < 0:
+				await context.send("Error: The specified time ({}) is in the past!".format(post_datetime_str))
+			else:
+				context.bot.queue_message(context.guild.id, target_channel_id, message, delta_sec)
+				await context.send("Sending message to channel {} at {}, {} from now.".format(channel, post_datetime_str, str(delta_time)))
+		except ValueError:
+			await context.send("Error: Invalid date/time format!")
+		except Exception as e:
+			await context.send("Error: {}".format(e))
+
+	@commands.command(brief="Sets the bot's time zone.", description="Uses the given timezone key to set the timezone that the bot uses for time-based functionality.")
+	async def set_time_zone(self, context, time_zone_key: str):
+		if time_zone_key not in config.valid_time_zones:
+			await context.send("Error: Invalid time zone specificed.  Please use the `list_time_zones` command to search for your intended time zone.")
+			return
+		current_time_zone = config.get_config_string("Time", "timezone")
+		if current_time_zone is not time_zone_key:
+			await context.send("The time zone is already set to {}".format(time_zone_key))
+		else:
+			config.set_config("Time", "timezone", time_zone_key)
+			await context.send("The time zone is now set to {}".format(time_zone_key))
+
+	@commands.command(brief="Lists available time zones.", description="Provides the list of known time zones, optionally filtered by a search string.")
+	async def list_time_zones(self, context, search_substr: typing.Optional[str]):
+		time_zones = config.valid_time_zones
+		if time_zones is None or len(time_zones) == 0:
+			await context.send("Error: Time zone data unavailable!")
+		else:
+			if search_substr is not None:
+				time_zones = {x for x in time_zones if search_substr in x}
+			send_str = "```\n"
+			for zone in time_zones:
+				send_str = send_str + str(zone) + "\n"
+			send_str = send_str + "```"
+			await context.send(send_str)
+
+# ----------------
 # Secret roll commands
 # ----------------
 
@@ -404,4 +485,5 @@ async def add_commands(bot):
 	bot.add_check(role_whitelist)
 
 	await bot.add_cog(VoiceCog(bot))
+	await bot.add_cog(ChatCog(bot))
 	await bot.add_cog(SecretRollCog(bot))
