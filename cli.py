@@ -292,13 +292,15 @@ class ChatCog(commands.Cog, name="Chat Commands"):
 			utc_now = datetime.datetime.now(datetime.timezone.utc)
 			# datetime.timedelta delta_time
 			delta_time = post_datetime - utc_now
+			# really don't care about sub-second time resolution here
+			delta_time.microseconds = 0
 			# int delta_sec
 			delta_sec = delta_time.total_seconds()
 			if delta_sec < 0:
 				await context.send("Error: The specified time ({}) is in the past!".format(post_datetime_str))
 			else:
 				context.bot.queue_message(context.guild.id, target_channel_id, message, delta_sec)
-				await context.send("Sending message to channel {} at {}, {} from now.".format(channel, post_datetime_str, str(delta_time)))
+				await context.send("Sending message to channel {} at {} ({} from now).".format(channel, post_datetime_str, str(delta_time)))
 		except ValueError:
 			await context.send("Error: Invalid date/time format!")
 		except Exception as e:
