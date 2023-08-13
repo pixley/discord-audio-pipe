@@ -270,8 +270,8 @@ class ChatCog(commands.Cog, name="Chat Commands"):
 
 	@commands.command(brief="Sends a message at a specific time.", description="Sends a message to the specified channel at a specified time and date, using the set time zone.  An at-here is automatically applied.")
 	async def schedule_post(self, context, channel: str, time: str, date: str, *split_message):
-		if not channel.startswith("#"):
-			await context.send("Error: Please use the \"#\" prefix with the channel name.")
+		if not channel.startswith("<#") or not channel.endswith(">"):
+			await context.send("Error: Please use the \"#\" prefix with the channel name to generate a channel link.")
 			return
 		# discord.Guild current_server
 		current_server = context.guild
@@ -279,16 +279,7 @@ class ChatCog(commands.Cog, name="Chat Commands"):
 			await context.send("Error: This command cannot be invoked outside of a server.")
 			return
 		# int target_channel_id
-		target_channel_id = -1
-		for server_channel in current_server.channels:
-			if server_channel.name == channel:
-				if not isinstance(server_channel, discord.TextChannel):
-					await context.send("Error: Requested channel is not a text channel.")
-					return
-				target_channel_id = server_channel.id
-		if target_channel_id == -1:
-			await context.send("Error: Channel {} does not exist on this server.".format(channel))
-			return
+		target_channel_id = int(channel[2:-1])
 		# str message
 		message = "@here " + " ".join(split_message)
 		try:
