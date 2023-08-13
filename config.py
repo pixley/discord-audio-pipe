@@ -15,6 +15,9 @@ valid_time_zones = None
 # params: str cfg_file_name
 # return boolean
 def setup_config(cfg_file_name):
+	global valid_time_zones
+	valid_time_zones = zoneinfo.available_timezones()
+
 	global file_name
 	file_name = cfg_file_name
 	# str use_file_name
@@ -39,9 +42,6 @@ def setup_config(cfg_file_name):
 	if use_default:
 		# write the defaults out to the regular cfg file
 		try_save()
-
-	global valid_time_zones
-	valid_time_zones = zoneinfo.available_timezones()
 
 # params: str section, str key
 # return str
