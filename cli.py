@@ -148,7 +148,7 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 		else:
 			await context.send("Error: !set_device requires a valid device id.  Call !devices for a list of valid devices.")
 
-	@commands.command(brief="Provides bot's current status.", description="Outputs current voice channel, audio device, and whether the watched process is active.")
+	@commands.command(brief="Provides bot's current status.", description="Outputs current voice channel, audio device, and whether the audio source is active.")
 	async def status(self, context):
 		# present voice connection status, current audio device, and watched process status
 		print("Status requested")
@@ -165,7 +165,11 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 			message = message + "\nNot currently connected to a voice channel."
 
 		if context.bot.use_vban:
-			message = message + "\nRunning in VBAN mode.  Listening for stream \"{}\"".format(config.get_config_string("VBAN", "stream_name"))
+			message = message + "\nListening for VBAN stream \"{}\"".format(config.get_config_string("VBAN", "stream_name"))
+			if context.bot.stream.stream_buffer:
+				message = message + "\nThe VBAN stream is active.  Transmitting audio to the voice channel."
+			else:
+				message = message + "\nNo incoming VBAN stream detected.  Double-check the stream name and IP address."
 		else:
 			# Get current audio device
 			try:

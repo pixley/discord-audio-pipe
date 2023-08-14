@@ -15,10 +15,10 @@ sd.default.samplerate = 48000
 
 class VBANStream(discord.AudioSource):
 	# int bytes_per_frame
-	# this is dictated by Discord; each frame is 20 ms
+	# 4 bytes per sample (stereo 16-bit audio)
 	bytes_per_frame = 3840
 	# int bytes_per_sec
-	# 4 bytes per sample (stereo 16-bit audio)
+	# this is dictated by Discord; each frame is 20 ms
 	bytes_per_sec = bytes_per_frame * 50
 
 	def __init__(self):
@@ -43,6 +43,8 @@ class VBANStream(discord.AudioSource):
 		# float buffering_max
 		# if we are buffering, when the buffer reaches this many seconds worth of audio data, buffering will be disabled
 		self.buffering_max = config.get_config_float("VBAN", "buffering_max")
+		# vban.VBAN_Recv receiver
+		self.receiver = None
 
 	def read(self):
 		# int frame_len
@@ -74,12 +76,11 @@ class VBANStream(discord.AudioSource):
 			del self.stream_buffer[0:frame_len]
 			# int new_len
 			new_len = len(self.stream_buffer)
-			# END CRITICAL SECTION
-			self.buffer_lock.release()
-
 			if self.verbose:
 				print("Removing {} bytes from VBAN buffer".format(frame_len))
 				print("VBAN buffer now contains {} bytes".format(new_len))
+			# END CRITICAL SECTION
+			self.buffer_lock.release()
 			return frame
 
 
@@ -90,12 +91,12 @@ class VBANStream(discord.AudioSource):
 		self.stream_buffer += raw_pcm
 		# int new_len
 		new_len = len(self.stream_buffer)
-		# END CRITICAL SECTION
-		self.buffer_lock.release()
-
 		if self.verbose:
+			print("Recieved data from {}.".format(self.receiver.senderIp))
 			print("Adding {} bytes to VBAN buffer".format(len(raw_pcm)))
 			print("VBAN buffer now contains {} bytes".format(new_len))
+		# END CRITICAL SECTION
+		self.buffer_lock.release()
 
 	def cleanup(self):
 		self.stop_vban()
@@ -128,22 +129,22 @@ class VBANStream(discord.AudioSource):
 			# str stream_name
 			stream_name = config.get_config_string("VBAN", "stream_name")
 
-			# vban.VBAN_Recv receiver
-			receiver = vban.VBAN_Recv(ip, stream_name, port, 0, verbose=self.verbose, stream=self)
+			self.receiver = vban.VBAN_Recv(ip, stream_name, port, 0, verbose=self.verbose, stream=self)
 			print("VBAN receiver initalized on {}:{}!".format(ip, port))
 			try:
 				while True:
 					try:
-						receiver.runforever()
+						self.receiver.runforever()
 					except IndexError:
 						# we have nothing left to receive; let's wait a bit
 						await asyncio.sleep(0.02)
 			except asyncio.CancelledError:
 				print("VBAN task cancelled!")
-				receiver.quit()
-				self.stream_buffer = bytearray()
+				self.receiver.quit()
 		except Exception as e:
 			print(e)
+		self.stream_buffer = bytearray()
+		self.reciever = None
 
 
 class PCMStream(discord.AudioSource):
