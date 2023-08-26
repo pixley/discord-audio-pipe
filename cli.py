@@ -166,7 +166,10 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 
 		if context.bot.use_vban:
 			message = message + "\nListening for VBAN stream \"{}\"".format(config.get_config_string("VBAN", "stream_name"))
-			if context.bot.stream:
+			if context.bot.stream is None:
+				# If we don't have a stream, then we're not connected to voice, so no need to say anything here.
+				pass
+			elif context.bot.stream.stream_buffer:
 				message = message + "\nThe VBAN stream is active.  Transmitting audio to the voice channel."
 			else:
 				message = message + "\nNo incoming VBAN stream detected.  Double-check the stream name and IP address."
