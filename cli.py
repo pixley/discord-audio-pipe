@@ -135,7 +135,7 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 		try:
 			device_list = sound.query_devices()
 			await context.send(sound.query_devices())
-		except DeviceNotFoundError:
+		except sound.DeviceNotFoundError:
 			logging.exception("Error: exception in sound.query_devices()")
 			await context.send("Error: Could not retrieve device list.  Contact administrator.")
 
@@ -176,7 +176,7 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 				# dict device
 				device = sound.get_device(context.bot.device_id)
 				message = message + "\nCurrent audio device is [{}] {}".format(context.bot.device_id, device["name"])
-			except DeviceNotFoundError:
+			except sound.DeviceNotFoundError:
 				logging.exception("Error: exception in sound.get_device()")
 				message = message + "\nInvalid audio device.  Please check the list of audio devices with !devices and set a new one using !set_device."
 
