@@ -295,7 +295,7 @@ class ChatCog(commands.Cog, name="Chat Commands"):
 		if not isinstance(actual_channel, discord.TextChannel):
 			await context.send("Error: Channel is not a text channel.")
 			return
-		if not actual_channel.permissions_for(context.bot.me).send_messages:
+		if not actual_channel.permissions_for(context.me).send_messages:
 			await context.send("Error: This bot does not have permission to post in that channel.")
 			return
 		# str message
