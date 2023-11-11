@@ -20,6 +20,7 @@ class VBAN_Recv(object):
 				self.sock.bind(socketAddr)
 			except Exception as e:
 				print(e)
+				print("Failed socket binding for {}{}{}.".format(self.senderIp, "/" if ipv6 else ":", port))
 				self.sock = None
 				continue
 			break
