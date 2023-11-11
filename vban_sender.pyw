@@ -29,14 +29,16 @@ sd.default.latency = "low"
 sd.default.samplerate = 48000
 
 async def main():
-	# str ip
-	ip = config.get_config_string("VBAN", "outgoing_ip")
+	# str host
+	host = config.get_config_string("VBAN", "outgoing_host")
 	# int port
 	port = config.get_config_int("VBAN", "outgoing_port")
 	# str stream_name
 	stream_name = config.get_config_string("VBAN", "stream_name")
 	# int device_id
 	device_id = config.get_config_int("VBAN", "listen_device_id")
+	# bool ipv6
+	ipv6 = config.get_config_bool("VBAN", "ipv6")
 	# bool verbose
 	verbose = config.get_config_bool("VBAN", "verbose")
 
@@ -45,7 +47,7 @@ async def main():
 	print("Audio device: {}".format(device["name"]))
 
 	# vban.VBAN_Send sender
-	sender = vban.VBAN_Send(ip, port, stream_name, sd.default.samplerate, device_id, verbose=verbose)
+	sender = vban.VBAN_Send(host, port, stream_name, sd.default.samplerate, device_id, ipv6=ipv6, verbose=verbose)
 	try:
 		while True:
 			sender.runonce()

@@ -1,6 +1,7 @@
 [VBAN]
-outgoing_ip = 127.0.0.1
+outgoing_host = 127.0.0.1
 outgoing_port = 6980
 stream_name = example
 listen_device_id = 0
 verbose = False
+ipv6 = True

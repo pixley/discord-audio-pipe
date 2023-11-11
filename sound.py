@@ -121,16 +121,20 @@ class VBANStream(discord.AudioSource):
 	async def recv_vban(self):
 		print("Initializing VBAN receiver...")
 		try:
-			# str ip
-			ip = config.get_config_string("VBAN", "incoming_ip")
+			# str host
+			host = config.get_config_string("VBAN", "incoming_host")
 			# int port
 			port = config.get_config_int("VBAN", "incoming_port")
+			# bool ipv6
+			ipv6 = config.get_config_bool("VBAN", "ipv6")
 			# str stream_name
 			stream_name = config.get_config_string("VBAN", "stream_name")
 
 			# vban.VBAN_Recv receiver
-			receiver = vban.VBAN_Recv(ip, stream_name, port, 0, verbose=self.verbose, stream=self)
-			print("VBAN receiver initalized on {}:{}!".format(ip, port))
+			receiver = vban.VBAN_Recv(ip, stream_name, port, 0, ipv6=ipv6, verbose=self.verbose, stream=self)
+			# str port_separator
+			port_separator = "/" if ipv6 else ":"
+			print("VBAN receiver initalized on {}{}{}!".format(host, port_separator, port))
 			try:
 				while True:
 					try:
