@@ -17,7 +17,7 @@ class VBAN_Recv(object):
 			try:
 				self.sock = socket.socket(socket.AF_INET6 if ipv6 else socket.AF_INET, socket.SOCK_DGRAM) # UDP
 				self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-				self.sock.setsockopt(socket.SOL_IP, IP_FREEBIND, 1)
+				self.sock.setsockopt(socket.SOL_IP, 15, 1) # optname 15 refers to IP_FREEBIND
 				self.sock.bind(socketAddr)
 			except Exception as e:
 				print(e)
