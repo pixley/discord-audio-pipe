@@ -10,11 +10,13 @@ class VBAN_Recv(object):
 		self.streamName = streamName
 		family = socket.AF_INET6 if ipv6 else socket.AF_INET6
 		addrInfoTuple = socket.getaddrinfo(senderHost, port, family=family, proto=socket.IPPROTO_UDP)[0]
-		self.senderIp = addrInfoTuple.sockaddr.address
+		# sockaddr is at index 4 in the tuple, and its ip address is at index 0
+		# this is why we should have strong typing, Python!
+		self.senderIp = addrInfoTuple[4][0]
 		self.const_VBAN_SRList = [6000, 12000, 24000, 48000, 96000, 192000, 384000, 8000, 16000, 32000, 64000, 128000, 256000, 512000, 11025, 22050, 44100, 88200, 176400, 352800, 705600] 
 		self.sock = socket.socket(socket.AF_INET6 if ipv6 else socket.AF_INET, socket.SOCK_DGRAM) # UDP over IPv6 or IPv4
 		self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		self.sock.bind(addrInfoTuple.sockaddr)
+		self.sock.bind(addrInfoTuple[4])
 		self.sock.setblocking(False)
 		self.sampRate = 48000
 		self.channels = 2
@@ -107,11 +109,14 @@ class VBAN_Send(object):
 		super(VBAN_Send, self).__init__()
 		self.streamName = streamName
 		family = socket.AF_INET6 if ipv6 else socket.AF_INET6
+		# We only care about the first result
 		addrInfoTuple = socket.getaddrinfo(toHost, toPort, family=family, proto=socket.IPPROTO_UDP)[0]
-		self.toIp = addrInfoTuple.sockaddr.address
+		# sockaddr is at index 4 in the tuple, and its ip address is at index 0
+		# this is why we should have strong typing, Python!
+		self.toIp = addrInfoTuple[4][0]
 		self.toPort = toPort
 		self.sock = socket.socket(socket.AF_INET6 if ipv6 else socket.AF_INET, socket.SOCK_DGRAM) # UDP over IPv6 or IPv4
-		self.sock.connect(addrinfoTuple.sockaddr)
+		self.sock.connect(addrinfoTuple[4])
 		self.sock.setblocking(False)
 		self.const_VBAN_SR = [6000, 12000, 24000, 48000, 96000, 192000, 384000, 8000, 16000, 32000, 64000, 128000, 256000, 512000,11025, 22050, 44100, 88200, 176400, 352800, 705600]
 		self.channels = sd.default.channels[0]
