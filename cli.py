@@ -219,7 +219,7 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 	@commands.command(brief="Changes VBAN source IP and stream name.", description="Changes which IP address to listen from and stream identifier when running in VBAN mode.")
 	async def vban_change_stream(self, context, new_ip: str, stream_name: typing.Optional[str]):
 		if context.bot.use_vban:
-			config.set_config("VBAN", "incoming_ip", new_ip)
+			config.set_config("VBAN", "incoming_host", new_ip)
 			if stream_name is not None:
 				config.set_config("VBAN", "stream_name", stream_name)
 			context.bot.reset_stream()
