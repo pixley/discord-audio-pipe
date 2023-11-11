@@ -149,7 +149,7 @@ class VBANStream(discord.AudioSource):
 				self.receiver.quit()
 		except Exception as e:
 			print(e)
-			print("Connection to {}({}) failed.".format(host, self.receiver.senderIp))
+			print("Connection to {} failed.".format(host))
 		self.stream_buffer = bytearray()
 		self.reciever = None
 

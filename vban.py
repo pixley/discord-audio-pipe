@@ -118,15 +118,16 @@ class VBAN_Send(object):
 		super(VBAN_Send, self).__init__()
 		self.streamName = streamName
 		family = socket.AF_INET6 if ipv6 else socket.AF_INET
+		self.toPort = toPort
 		# We only care about the first result
 		for addrInfoTuple in socket.getaddrinfo(toHost, toPort, type=socket.SOCK_DGRAM, family=family, proto=socket.IPPROTO_UDP):
 			# Break up the tuple
 			famInfo, typeInfo, protoInfo, canonName, socketAddr = addrInfoTuple
-			self.senderIp = socketAddr[0]	# The first element of the sockAddr tuple is the IP address under both IPv4 and IPv6
+			self.toIp = socketAddr[0]	# The first element of the sockAddr tuple is the IP address under both IPv4 and IPv6
 			try:
 				self.sock = socket.socket(socket.AF_INET6 if ipv6 else socket.AF_INET, socket.SOCK_DGRAM) # UDP
 				self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-				self.sock.bind(socketAddr)
+				self.sock.connect(socketAddr)
 			except Exception as e:
 				print(e)
 				self.sock = None
@@ -134,7 +135,7 @@ class VBAN_Send(object):
 			break
 		if self.sock is None:
 			raise RuntimeError("Could not initialize VBAN recv socket!")
-			
+
 		self.sock.setblocking(False)
 		self.const_VBAN_SR = [6000, 12000, 24000, 48000, 96000, 192000, 384000, 8000, 16000, 32000, 64000, 128000, 256000, 512000,11025, 22050, 44100, 88200, 176400, 352800, 705600]
 		self.channels = sd.default.channels[0]
