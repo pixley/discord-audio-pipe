@@ -121,22 +121,22 @@ class VBANStream(discord.AudioSource):
 
 	async def recv_vban(self):
 		print("Initializing VBAN receiver...")
-		try:
-			# str host
-			host = config.get_config_string("VBAN", "incoming_host")
-			# int port
-			port = config.get_config_int("VBAN", "incoming_port")
-			# bool ipv6
-			ipv6 = config.get_config_bool("VBAN", "ipv6")
-			# str stream_name
-			stream_name = config.get_config_string("VBAN", "stream_name")
+		# str host
+		host = config.get_config_string("VBAN", "incoming_host")
+		# int port
+		port = config.get_config_int("VBAN", "incoming_port")
+		# bool ipv6
+		ipv6 = config.get_config_bool("VBAN", "ipv6")
+		# str stream_name
+		stream_name = config.get_config_string("VBAN", "stream_name")
 
+		try:
 			# vban.VBAN_Recv receiver
-			receiver = vban.VBAN_Recv(host, stream_name, port, 0, ipv6=ipv6, verbose=self.verbose, stream=self)
+			self.receiver = vban.VBAN_Recv(host, stream_name, port, 0, ipv6=ipv6, verbose=self.verbose, stream=self)
 			# str port_separator
 			port_separator = "/" if ipv6 else ":"
-			print("VBAN receiver initalized on {}{}{}!".format(host, port_separator, port))
-			
+			print("VBAN receiver initalized on {}{}{}!".format(receiver.senderIp, port_separator, port))
+
 			try:
 				while True:
 					try:
@@ -149,6 +149,7 @@ class VBANStream(discord.AudioSource):
 				self.receiver.quit()
 		except Exception as e:
 			print(e)
+			print("Connection to {}({}) failed.".format(host, self.receiver.senderIp))
 		self.stream_buffer = bytearray()
 		self.reciever = None
 

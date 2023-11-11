@@ -8,15 +8,24 @@ class VBAN_Recv(object):
 	def __init__(self, senderHost, streamName, port, outDeviceIndex, ipv6=True, verbose=False, stream=None):
 		super(VBAN_Recv, self).__init__()
 		self.streamName = streamName
-		family = socket.AF_INET6 if ipv6 else socket.AF_INET6
-		addrInfoTuple = socket.getaddrinfo(senderHost, port, family=family, proto=socket.IPPROTO_UDP)[0]
-		# sockaddr is at index 4 in the tuple, and its ip address is at index 0
-		# this is why we should have strong typing, Python!
-		self.senderIp = addrInfoTuple[4][0]
 		self.const_VBAN_SRList = [6000, 12000, 24000, 48000, 96000, 192000, 384000, 8000, 16000, 32000, 64000, 128000, 256000, 512000, 11025, 22050, 44100, 88200, 176400, 352800, 705600] 
-		self.sock = socket.socket(socket.AF_INET6 if ipv6 else socket.AF_INET, socket.SOCK_DGRAM) # UDP over IPv6 or IPv4
-		self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		self.sock.bind(addrInfoTuple[4])
+		family = socket.AF_INET6 if ipv6 else socket.AF_INET
+		for addrInfoTuple in socket.getaddrinfo(senderHost, port, family=family, type=socket.SOCK_DGRAM, proto=socket.IPPROTO_UDP):
+			# Break up the tuple
+			famInfo, typeInfo, protoInfo, canonName, socketAddr = addrInfoTuple
+			self.senderIp = socketAddr[0]	# The first element of the sockAddr tuple is the IP address under both IPv4 and IPv6
+			try:
+				self.sock = socket.socket(socket.AF_INET6 if ipv6 else socket.AF_INET, socket.SOCK_DGRAM) # UDP
+				self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+				self.sock.bind(socketAddr)
+			except Exception as e:
+				print(e)
+				self.sock = None
+				continue
+			break
+		if self.sock is None:
+			raise RuntimeError("Could not initialize VBAN recv socket!")
+
 		self.sock.setblocking(False)
 		self.sampRate = 48000
 		self.channels = 2
@@ -108,15 +117,24 @@ class VBAN_Send(object):
 	def __init__(self, toHost, toPort, streamName, sampRate, inDeviceIndex, ipv6=True, verbose=False ):
 		super(VBAN_Send, self).__init__()
 		self.streamName = streamName
-		family = socket.AF_INET6 if ipv6 else socket.AF_INET6
+		family = socket.AF_INET6 if ipv6 else socket.AF_INET
 		# We only care about the first result
-		addrInfoTuple = socket.getaddrinfo(toHost, toPort, family=family, proto=socket.IPPROTO_UDP)[0]
-		# sockaddr is at index 4 in the tuple, and its ip address is at index 0
-		# this is why we should have strong typing, Python!
-		self.toIp = addrInfoTuple[4][0]
-		self.toPort = toPort
-		self.sock = socket.socket(socket.AF_INET6 if ipv6 else socket.AF_INET, socket.SOCK_DGRAM) # UDP over IPv6 or IPv4
-		self.sock.connect(addrinfoTuple[4])
+		for addrInfoTuple in socket.getaddrinfo(toHost, toPort, type=socket.SOCK_DGRAM, family=family, proto=socket.IPPROTO_UDP):
+			# Break up the tuple
+			famInfo, typeInfo, protoInfo, canonName, socketAddr = addrInfoTuple
+			self.senderIp = socketAddr[0]	# The first element of the sockAddr tuple is the IP address under both IPv4 and IPv6
+			try:
+				self.sock = socket.socket(socket.AF_INET6 if ipv6 else socket.AF_INET, socket.SOCK_DGRAM) # UDP
+				self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+				self.sock.bind(socketAddr)
+			except Exception as e:
+				print(e)
+				self.sock = None
+				continue
+			break
+		if self.sock is None:
+			raise RuntimeError("Could not initialize VBAN recv socket!")
+			
 		self.sock.setblocking(False)
 		self.const_VBAN_SR = [6000, 12000, 24000, 48000, 96000, 192000, 384000, 8000, 16000, 32000, 64000, 128000, 256000, 512000,11025, 22050, 44100, 88200, 176400, 352800, 705600]
 		self.channels = sd.default.channels[0]

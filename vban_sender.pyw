@@ -28,11 +28,11 @@ async def main():
 	device = sd.query_devices(device_id)
 	print("Audio device: {}".format(device["name"]))
 
-	# str port_separator
-	port_separator = "/" if ipv6 else ":"
-	print("Beginning VBAN stream \"{}\" to {}{}{}".format(stream_name, host, port_separator, port))
 	# vban.VBAN_Send sender
 	sender = vban.VBAN_Send(host, port, stream_name, sd.default.samplerate, device_id, ipv6=ipv6, verbose=verbose)
+	# str port_separator
+	port_separator = "/" if ipv6 else ":"
+	print("Beginning VBAN stream \"{}\" to {}{}{}".format(stream_name, sender.toIp, port_separator, port))
 	try:
 		while True:
 			sender.runonce()
