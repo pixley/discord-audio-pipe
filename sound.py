@@ -135,7 +135,7 @@ class VBANStream(discord.AudioSource):
 			self.receiver = vban.VBAN_Recv(host, stream_name, port, 0, ipv6=ipv6, verbose=self.verbose, stream=self)
 			# str port_separator
 			port_separator = "/" if ipv6 else ":"
-			print("VBAN receiver initalized on {}{}{}!".format(receiver.senderIp, port_separator, port))
+			print("VBAN receiver initalized on {}{}{}!".format(self.receiver.senderIp, port_separator, port))
 
 			try:
 				while True:
