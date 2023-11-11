@@ -3,6 +3,8 @@ import discord
 import logging
 import config
 from discord.ext import commands
+import datetime
+import asyncio
 
 class Dap_Bot(commands.Bot):
 	def __init__(self, command_prefix, intents):
@@ -91,3 +93,23 @@ class Dap_Bot(commands.Bot):
 				self.stream.cleanup()
 			if self.voice is not None and self.voice.source is not None:
 				self.start_stream()
+
+	def queue_message(self, guild_id: int, channel_id: int, message: str, delay: int):
+		asyncio.create_task(self.post_queued_message(guild_id, channel_id, message, delay))
+
+	async def post_queued_message(self, guild_id: int, channel_id: int, message: str, delay: int):
+		await asyncio.sleep(delay)
+		# discord.Guild guild
+		guild = self.get_guild(guild_id)
+		if guild is None:
+			print("Error: guild doesn't exist")
+			return
+		# discord.abd.GuildChannel channel
+		channel = guild.get_channel(channel_id)
+		if channel is None:
+			print("Error: channel doesn't exist")
+			return
+		if isinstance(channel, discord.TextChannel):
+			await channel.send(message)
+		else:
+			print("Error: channel is no longer a text channel.")

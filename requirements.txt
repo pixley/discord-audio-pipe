@@ -1,3 +1,4 @@
-discord.py[voice]==2.2.2
+discord.py[voice]==2.3.2
 sounddevice==0.4.2
 psutil==5.8.0
+pyaudio==0.2.11

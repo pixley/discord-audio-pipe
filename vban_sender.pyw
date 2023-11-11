@@ -1,26 +1,8 @@
-import logging
-
-# error logging
-error_formatter = logging.Formatter(
-	fmt="%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
-)
-
-error_handler = logging.FileHandler("VBAN_errors.log", delay=True)
-error_handler.setLevel(logging.ERROR)
-error_handler.setFormatter(error_formatter)
-
-info_handler = logging.FileHandler("VBAN.log", delay=True)
-info_handler.setLevel(logging.INFO)
-info_handler.setFormatter(error_formatter)
-
-base_logger = logging.getLogger()
-base_logger.addHandler(error_handler)
-base_logger.addHandler(info_handler)
-
 import vban
 import config
 import asyncio
 import sounddevice as sd
+import pkg_resources
 
 DEFAULT = 0
 sd.default.channels = 2
@@ -46,25 +28,34 @@ async def main():
 	device = sd.query_devices(device_id)
 	print("Audio device: {}".format(device["name"]))
 
+	print("Beginning VBAN stream \"{}\" to {}:{}".format(stream_name, ip, port))
 	# vban.VBAN_Send sender
 	sender = vban.VBAN_Send(host, port, stream_name, sd.default.samplerate, device_id, ipv6=ipv6, verbose=verbose)
 	try:
 		while True:
 			sender.runonce()
 			await asyncio.sleep(0)
-	except Exception as e:
-		logging.exception("Exception in main!")
-		print(e)
+	finally:
 		sender.quit()
+
+# check dependency on pyaudio, as we don't import it, and not having it will silently fail
+if "pyaudio" not in {pkg.key for pkg in pkg_resources.working_set}:
+	print("This applet requires the 'pyaudio' package.  You can install it with the command 'pip install pyaudio'.")
+	quit()
+else:
+	print("Package 'pyaudio' found!")
 
 # run program
 config.setup_config("vban_sender.cfg")
 loop = asyncio.get_event_loop()
 try:
 	loop.run_until_complete(main())
+except KeyboardInterrupt:
+	print("Exit requested!")
 except Exception as e:
-	logging.info("Exiting...")
-	print(e)
+	print("Error: {}".format(e))
+finally:
+	print("Exiting...")
 	# this sleep prevents a bugged exception on Windows
 	loop.run_until_complete(asyncio.sleep(1))
 	loop.close()

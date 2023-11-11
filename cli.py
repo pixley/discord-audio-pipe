@@ -8,6 +8,8 @@ import typing
 import string
 from discord.ext import commands
 import secret_rolls as sroll
+import datetime
+import zoneinfo
 
 # -------------------------
 # Bot command global checks
@@ -133,7 +135,7 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 		try:
 			device_list = sound.query_devices()
 			await context.send(sound.query_devices())
-		except DeviceNotFoundError:
+		except sound.DeviceNotFoundError:
 			logging.exception("Error: exception in sound.query_devices()")
 			await context.send("Error: Could not retrieve device list.  Contact administrator.")
 
@@ -146,7 +148,7 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 		else:
 			await context.send("Error: !set_device requires a valid device id.  Call !devices for a list of valid devices.")
 
-	@commands.command(brief="Provides bot's current status.", description="Outputs current voice channel, audio device, and whether the watched process is active.")
+	@commands.command(brief="Provides bot's current status.", description="Outputs current voice channel, audio device, and whether the audio source is active.")
 	async def status(self, context):
 		# present voice connection status, current audio device, and watched process status
 		print("Status requested")
@@ -163,14 +165,21 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 			message = message + "\nNot currently connected to a voice channel."
 
 		if context.bot.use_vban:
-			message = message + "\nRunning in VBAN mode.  Listening for stream \"{}\"".format(config.get_config_string("VBAN", "stream_name"))
+			message = message + "\nListening for VBAN stream \"{}\"".format(config.get_config_string("VBAN", "stream_name"))
+			if context.bot.stream is None:
+				# If we don't have a stream, then we're not connected to voice, so no need to say anything here.
+				pass
+			elif context.bot.stream.stream_buffer:
+				message = message + "\nThe VBAN stream is active.  Transmitting audio to the voice channel."
+			else:
+				message = message + "\nNo incoming VBAN stream detected.  Double-check the stream name and IP address."
 		else:
 			# Get current audio device
 			try:
 				# dict device
 				device = sound.get_device(context.bot.device_id)
 				message = message + "\nCurrent audio device is [{}] {}".format(context.bot.device_id, device["name"])
-			except DeviceNotFoundError:
+			except sound.DeviceNotFoundError:
 				logging.exception("Error: exception in sound.get_device()")
 				message = message + "\nInvalid audio device.  Please check the list of audio devices with !devices and set a new one using !set_device."
 
@@ -258,6 +267,88 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 			await context.send("Role \"{}\" removed from whitelist.".format(role_name))
 		else:
 			await context.send("Error removing role \"{}\" from whitelist.  It may not have been there to begin with.".format(role_name))
+
+# ----------------
+# Chat commands
+# ----------------
+class ChatCog(commands.Cog, name="Chat Commands"):
+	def __init__(self, bot: commands.Bot):
+		self.bot = bot
+
+	@commands.command(brief="Sends a message at a specific time.", description="Sends a message to the specified channel at a specified time and date, using the set time zone.  An at-here is automatically applied.")
+	async def schedule_post(self, context, channel: str, time: str, date: str, *split_message):
+		if not channel.startswith("<#") or not channel.endswith(">"):
+			await context.send("Error: Please use the \"#\" prefix with the channel name to generate a channel link.")
+			return
+		# discord.Guild current_server
+		current_server = context.guild
+		if current_server is None:
+			await context.send("Error: This command cannot be invoked outside of a server.")
+			return
+		# int target_channel_id
+		target_channel_id = int(channel[2:-1])
+		# discord.abc.GuildChannel actual_channel
+		actual_channel = current_server.get_channel(target_channel_id)
+		if actual_channel is None:
+			await context.send("Error: Channel does not exist on this server.")
+			return
+		if not isinstance(actual_channel, discord.TextChannel):
+			await context.send("Error: Channel is not a text channel.")
+			return
+		if not actual_channel.permissions_for(context.me).send_messages:
+			await context.send("Error: This bot does not have permission to post in that channel.")
+			return
+		# str message
+		message = "@here " + " ".join(split_message)
+		try:
+			# determine how long in the future to post the message
+			# datetime.datetime post_datetime
+			post_datetime = config.parse_datetime(date, time).replace(tzinfo=zoneinfo.ZoneInfo(config.get_config_string("Time", "timezone")))
+			# str post_datetime_str
+			post_datetime_str = post_datetime.strftime("%a %d %b %Y, %I:%M%p")
+			# datetime.datetime utc_now
+			utc_now = datetime.datetime.now(datetime.timezone.utc)
+			# datetime.timedelta delta_time
+			delta_time = post_datetime - utc_now
+			# really don't care about sub-second time resolution here
+			delta_time = delta_time - datetime.timedelta(microseconds=delta_time.microseconds)
+			# int delta_sec
+			delta_sec = delta_time.total_seconds()
+			if delta_sec < 0:
+				await context.send("Error: The specified time ({}) is in the past!".format(post_datetime_str))
+			else:
+				context.bot.queue_message(context.guild.id, target_channel_id, message, delta_sec)
+				await context.send("Sending message to channel {} at {} ({} from now).".format(channel, post_datetime_str, str(delta_time)))
+		except ValueError:
+			await context.send("Error: Invalid date/time format!")
+		except Exception as e:
+			await context.send("Error: {}".format(e))
+
+	@commands.command(brief="Sets the bot's time zone.", description="Uses the given timezone key to set the timezone that the bot uses for time-based functionality.")
+	async def set_time_zone(self, context, time_zone_key: str):
+		if time_zone_key not in config.valid_time_zones:
+			await context.send("Error: Invalid time zone specificed.  Please use the `list_time_zones` command to search for your intended time zone.")
+			return
+		current_time_zone = config.get_config_string("Time", "timezone")
+		if current_time_zone is not time_zone_key:
+			await context.send("The time zone is already set to {}".format(time_zone_key))
+		else:
+			config.set_config("Time", "timezone", time_zone_key)
+			await context.send("The time zone is now set to {}".format(time_zone_key))
+
+	@commands.command(brief="Lists available time zones.", description="Provides the list of known time zones, optionally filtered by a search string.")
+	async def list_time_zones(self, context, search_substr: typing.Optional[str]):
+		time_zones = config.valid_time_zones
+		if time_zones is None or len(time_zones) == 0:
+			await context.send("Error: Time zone data unavailable!")
+		else:
+			if search_substr is not None:
+				time_zones = {x for x in time_zones if search_substr in x}
+			send_str = "```\n"
+			for zone in time_zones:
+				send_str = send_str + str(zone) + "\n"
+			send_str = send_str + "```"
+			await context.send(send_str)
 
 # ----------------
 # Secret roll commands
@@ -404,4 +495,5 @@ async def add_commands(bot):
 	bot.add_check(role_whitelist)
 
 	await bot.add_cog(VoiceCog(bot))
+	await bot.add_cog(ChatCog(bot))
 	await bot.add_cog(SecretRollCog(bot))

@@ -96,8 +96,10 @@ async def main(bot):
 
 config.setup_config("settings.cfg")
 sroll.setup()
+# discord.Intents all_intents
+all_intents = discord.Intents.all()
 # bot.Dap_Bot bot
-bot = bot.Dap_Bot('!', intents=discord.Intents.all())
+bot = bot.Dap_Bot('!', intents=all_intents)
 bot.case_insensitive = True
 
 @bot.event
