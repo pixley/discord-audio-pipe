@@ -8,7 +8,7 @@ class log_only_filter:
 			# slice off leading "##"
 			record.msg = record.msg[2:]
 			return False
-		else
+		else:
 			return True
 
 error_formatter = logging.Formatter(
