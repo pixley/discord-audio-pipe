@@ -21,7 +21,7 @@ log_handler = logging.FileHandler("DAP.log", delay=True)
 # Not setting level means all messages go to log
 log_handler.setFormatter(log_formatter)
 
-print_handler = logging.SysLogHandler()
+print_handler = logging.StreamHandler(sys.stdout)
 # Not setting level means all messages are printed
 print_handler.setFormatter(print_formatter)
 
