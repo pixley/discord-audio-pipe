@@ -96,7 +96,8 @@ class Dap_Bot(commands.Bot):
 
 	async def leave_voice_channel(self):
 		if self.voice is not None:
-			await self.voice.disconnect()
+			if self.voice.is_connected():
+				await self.voice.disconnect()
 			self.voice = None
 		if self.stream is not None:
 			self.stream.cleanup()
