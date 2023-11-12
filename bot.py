@@ -5,6 +5,8 @@ import config
 from discord.ext import commands
 import datetime
 import asyncio
+import socket
+import aiohttp
 
 class Dap_Bot(commands.Bot):
 	def __init__(self, command_prefix, intents):
@@ -20,6 +22,11 @@ class Dap_Bot(commands.Bot):
 
 	def apply_config(self):
 		self.use_vban = config.get_config_bool("Audio", "use_vban")
+		ipv6 = config.get_config_bool("System", "ipv6")
+		if ipv6:
+			# need to inject IPv6 support before attempting to connect
+			# as of 12 Nov 2023, Discord's API doesn't actually support IPv6, but this is still needed if using NAT64
+			self.connector = aiohttp.TCPConnector(limit=0, family=socket.AF_INET6)
 
 	def start_stream(self):
 		if self.voice is None:

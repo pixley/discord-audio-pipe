@@ -14,11 +14,11 @@ print_formatter = logging.Formatter(
 	fmt="[%(levelname)s] %(message)s"
 )
 
-error_handler = logging.FileHandler("DAP_errors.log", delay=True)
+error_handler = logging.FileHandler("DAP_errors.log", encoding="utf-8", delay=True)
 error_handler.setLevel(logging.ERROR)
 error_handler.setFormatter(error_formatter)
 
-log_handler = logging.FileHandler("DAP.log", delay=True)
+log_handler = logging.FileHandler("DAP.log", encoding="utf-8", delay=True)
 # Not setting level means all messages go to log
 log_handler.setFormatter(log_formatter)
 
@@ -32,7 +32,6 @@ base_logger.addHandler(log_handler)
 base_logger.addHandler(print_handler)
 
 from ctypes.util import find_library
-import sys
 import cli
 import sound
 import bot

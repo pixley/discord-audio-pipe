@@ -127,7 +127,7 @@ class VBANStream(discord.AudioSource):
 		# int port
 		port = config.get_config_int("VBAN", "incoming_port")
 		# bool ipv6
-		ipv6 = config.get_config_bool("VBAN", "ipv6")
+		ipv6 = config.get_config_bool("System", "ipv6")
 		# str stream_name
 		stream_name = config.get_config_string("VBAN", "stream_name")
 		

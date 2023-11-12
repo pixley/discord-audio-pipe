@@ -1,5 +1,6 @@
 [System]
 watched_process_name = 
+ipv6 = True
 
 [Audio]
 volume = 0.5
@@ -13,7 +14,6 @@ stream_name = example
 verbose = False
 buffering_min = 0.1
 buffering_max = 0.3
-ipv6 = True
 
 [Time]
 timezone = UTC
