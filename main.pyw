@@ -1,16 +1,34 @@
 import logging
 
-# error logging
+# logging
 error_formatter = logging.Formatter(
 	fmt="%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+)
+
+log_formatter = logging.Formatter(
+	fmt="%(asctime)s [%(levelname)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+)
+
+print_formatter = logging.Formatter(
+	fmt="[%(levelname)s] %(message)s""
 )
 
 error_handler = logging.FileHandler("DAP_errors.log", delay=True)
 error_handler.setLevel(logging.ERROR)
 error_handler.setFormatter(error_formatter)
 
+log_handler = logging.FileHandler("DAP.log", delay=True)
+# Not setting level means all messages go to log
+log_handler.setFormatter(log_formatter)
+
+print_handler = logging.SysLogHandler()
+# Not setting level means all messages are printed
+print_handler.setFormatter(print_formatter)
+
 base_logger = logging.getLogger()
 base_logger.addHandler(error_handler)
+base_logger.addHandler(log_handler)
+base_logger.addHandler(print_handler)
 
 from ctypes.util import find_library
 import sys
@@ -53,7 +71,7 @@ if args.verbose:
 	)
 
 	debug_handler = logging.FileHandler(
-		filename="discord.log", encoding="utf-8", mode="w"
+		filename="DAP_debug.log", encoding="utf-8", mode="w"
 	)
 	debug_handler.setFormatter(debug_formatter)
 
@@ -72,23 +90,23 @@ async def main(bot):
 			token_file = open("token.txt", "r")
 			token = token_file.read()
 			if token == "":
-				print("Error: no token specified.")
+				logging.info("Error: no token specified.")
 				return
 			token_file.close()
 
 		await cli.add_commands(bot)
 
 		# log in and connect
-		print("Logging into Discord...")
+		logging.info("Logging into Discord...")
 		await bot.start(token)
 
 	except FileNotFoundError:
-		print("No Token Provided")
+		logging.info("No Token Provided")
 
 	except discord.errors.LoginFailure:
-		print("Login Failed: Please check if the token is correct")
+		logging.info("Login Failed: Please check if the token is correct")
 
-	except Exception:
+	except Exception as e:
 		logging.exception("Error on main")
 
 
@@ -104,7 +122,7 @@ bot.case_insensitive = True
 
 @bot.event
 async def on_ready():
-	print("Logged in to Discord as {}!".format(bot.user.name))
+	logging.info("Logged in to Discord as {}!".format(bot.user.name))
 
 loop = asyncio.get_event_loop_policy().get_event_loop()
 
@@ -112,32 +130,32 @@ loop = asyncio.get_event_loop_policy().get_event_loop()
 bot.apply_config()
 
 if not discord.opus.is_loaded():
-	print("Need to load Opus libraries...")
+	logging.info("Need to load Opus libraries...")
 	
 	opus_lib_str = find_library("opus")
 	if opus_lib_str is None:
 		# fallback suggested by discord.py's docs
 		opus_lib_str = "libopus.so.1"
-		print("Could not find libopus - using fallback")
+		logging.info("Could not find libopus - using fallback")
 	else:
-		print("libopus found: {}".format(opus_lib_str))
+		logging.info("libopus found: {}".format(opus_lib_str))
 		
-	print("Attempting to load Opus libraries...")
+	logging.info("Attempting to load Opus libraries...")
 	try:
 		discord.opus.load_opus(opus_lib_str)
-		print("Opus libraries successfully loaded!")
+		logging.info("Opus libraries successfully loaded!")
 	except:
-		print("Could not load libopus...  Audio unlikely to function.")
+		logging.info("Could not load libopus...  Audio unlikely to function.")
 else:
-	print("Opus libraries loaded automatically!")
+	logging.info("Opus libraries loaded automatically!")
 
 try:
 	loop.run_until_complete(main(bot))
 except KeyboardInterrupt:
-	print("Received keyboard interrupt!")
+	logging.info("Received keyboard interrupt!")
 except Exception as e:
-	print(e)
-print("Exiting...")
+	logging.info(e)
+logging.info("Exiting...")
 loop.run_until_complete(bot.close())
 # this sleep prevents a bugged exception on Windows
 loop.run_until_complete(asyncio.sleep(1))

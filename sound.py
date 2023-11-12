@@ -5,7 +5,8 @@ import asyncio
 import config
 import sounddevice as sd
 import threading
-from pprint import pformat
+import logging
+from plogging.info import pformat
 
 DEFAULT = 0
 sd.default.channels = 2
@@ -66,7 +67,7 @@ class VBANStream(discord.AudioSource):
 			self.buffer_lock.release()
 			# we don't have enough audio to present a 20 ms frame; return the corresponding amount of silence instead
 			if self.verbose:
-				print("Insufficient audio data in VBAN buffer; transmitting silence")
+				logging.info("Insufficient audio data in VBAN buffer; transmitting silence")
 			# the bytes(int) constructor creates a zero-filled object of length equal to the param
 			return bytes(frame_len)
 		else:
@@ -77,8 +78,8 @@ class VBANStream(discord.AudioSource):
 			# int new_len
 			new_len = len(self.stream_buffer)
 			if self.verbose:
-				print("Removing {} bytes from VBAN buffer".format(frame_len))
-				print("VBAN buffer now contains {} bytes".format(new_len))
+				logging.info("Removing {} bytes from VBAN buffer".format(frame_len))
+				logging.info("VBAN buffer now contains {} bytes".format(new_len))
 			# END CRITICAL SECTION
 			self.buffer_lock.release()
 			return frame
@@ -92,9 +93,9 @@ class VBANStream(discord.AudioSource):
 		# int new_len
 		new_len = len(self.stream_buffer)
 		if self.verbose:
-			print("Recieved data from {}.".format(self.receiver.senderIp))
-			print("Adding {} bytes to VBAN buffer".format(len(raw_pcm)))
-			print("VBAN buffer now contains {} bytes".format(new_len))
+			logging.info("Recieved data from {}.".format(self.receiver.senderIp))
+			logging.info("Adding {} bytes to VBAN buffer".format(len(raw_pcm)))
+			logging.info("VBAN buffer now contains {} bytes".format(new_len))
 		# END CRITICAL SECTION
 		self.buffer_lock.release()
 
@@ -110,17 +111,17 @@ class VBANStream(discord.AudioSource):
 		return False
 
 	def start_vban(self):
-		print("Creating VBAN task...")
+		logging.info("Creating VBAN task...")
 		self.recv_task = asyncio.create_task(self.recv_vban())
 
 	def stop_vban(self):
 		if self.recv_task is not None:
-			print("Cancelling VBAN task...")
+			logging.info("Cancelling VBAN task...")
 			self.recv_task.cancel()
 			self.recv_task = None
 
 	async def recv_vban(self):
-		print("Initializing VBAN receiver...")
+		logging.info("Initializing VBAN receiver...")
 		# str host
 		host = config.get_config_string("VBAN", "incoming_host")
 		# int port
@@ -137,11 +138,11 @@ class VBANStream(discord.AudioSource):
 		try:
 			# vban.VBAN_Recv receiver
 			self.receiver = vban.VBAN_Recv(host, stream_name, port, 0, ipv6=ipv6, verbose=self.verbose, stream=self)
-			# str printed_ip
-			printed_ip = self.receiver.senderIp
+			# str logging.infoed_ip
+			logging.infoed_ip = self.receiver.senderIp
 			if ipv6:
-				printed_ip = "[" + printed_ip + "]"
-			print("VBAN receiver initalized on {}:{}!".format(printed_ip, port))
+				logging.infoed_ip = "[" + logging.infoed_ip + "]"
+			logging.info("VBAN receiver initalized on {}:{}!".format(logging.infoed_ip, port))
 
 			try:
 				while True:
@@ -151,11 +152,11 @@ class VBANStream(discord.AudioSource):
 						# we have nothing left to receive; let's wait a bit
 						await asyncio.sleep(0.02)
 			except asyncio.CancelledError:
-				print("VBAN task cancelled!")
+				logging.info("VBAN task cancelled!")
 				self.receiver.quit()
 		except Exception as e:
-			print(e)
-			print("Connection to {} failed.".format(host))
+			logging.info(e)
+			logging.info("Connection to {} failed.".format(host))
 		self.stream_buffer = bytearray()
 		self.reciever = None
 
@@ -167,7 +168,7 @@ class PCMStream(discord.AudioSource):
 
 	def read(self):
 		if self.stream is None:
-			print("Audio stream unavailable.")
+			logging.info("Audio stream unavailable.")
 			return
 		
 		# Discord reads 20 ms worth of audio at a time (20 ms * 50 == 1000 ms == 1 sec)

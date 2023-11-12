@@ -56,10 +56,10 @@ class Dap_Bot(commands.Bot):
 					self.device_id = new_id
 					self.stream.change_device(new_id)
 					config.set_config("Audio", "device_id", new_id)
-					print("Device {} selected".format(new_id))
+					logging.info("Device {} selected".format(new_id))
 					return True
 				else:
-					print("Error: invalid device id or no devices available!")
+					logging.info("Error: invalid device id or no devices available!")
 					return False
 		else:
 			return False
@@ -102,14 +102,14 @@ class Dap_Bot(commands.Bot):
 		# discord.Guild guild
 		guild = self.get_guild(guild_id)
 		if guild is None:
-			print("Error: guild doesn't exist")
+			logging.info("Error: guild doesn't exist")
 			return
 		# discord.abd.GuildChannel channel
 		channel = guild.get_channel(channel_id)
 		if channel is None:
-			print("Error: channel doesn't exist")
+			logging.info("Error: channel doesn't exist")
 			return
 		if isinstance(channel, discord.TextChannel):
 			await channel.send(message)
 		else:
-			print("Error: channel is no longer a text channel.")
+			logging.info("Error: channel is no longer a text channel.")

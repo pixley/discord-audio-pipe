@@ -79,17 +79,17 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 					channel_id = channel.id
 		
 		if channel_id == 0:
-			print("Error: User wasn't in a voice channel and did not provide the name of one.")
+			logging.info("Error: User wasn't in a voice channel and did not provide the name of one.")
 			await context.send("Error: User must be in a voice channel or specify a voice channel's name when calling !join.")
 		else:
 			try:
-				print("Joining channel...")
+				logging.info("Joining channel...")
 				# discord.VoiceChannel channel
 				channel = context.bot.get_channel(channel_id)
 
 				await context.bot.join_voice_channel(channel)
 
-				print("Playing audio in {}".format(channel.name))
+				logging.info("Playing audio in {}".format(channel.name))
 				await context.send("Joined channel {}.".format(channel.name))
 			except Exception:
 				logging.exception("Error on channel join")
@@ -104,10 +104,10 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 		if channel is not None:
 			await context.bot.leave_voice_channel()
 
-			print("Left channel {}".format(channel.name))
+			logging.info("Left channel {}".format(channel.name))
 			await context.send("Left channel {}.".format(channel.name))
 		else:
-			print("Error: Not in voice channel")
+			logging.info("Error: Not in voice channel")
 			await context.send("Error: Bot was not in a voice channel on this server.")
 
 	@commands.command(brief="Check or adjust volume.", description="Changes volume to specified percentage or reports the current volume.")
@@ -116,20 +116,20 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 			# Respond with current volume.
 			# int cur_volume
 			cur_volume = int(config.get_config_float("Audio", "volume") * 100.0)
-			print("Current volume requested")
+			logging.info("Current volume requested")
 			await context.send("Volume is currently set to {}%.".format(cur_volume))
 		else:
 			float_vol = float(vol) / 100.0
 			if context.bot.change_volume(float_vol):
-				print("Volume changed")
+				logging.info("Volume changed")
 				await context.send("Volume changed to {}%".format(vol))
 			else:
-				print("Error: bad volume value")
+				logging.info("Error: bad volume value")
 				await context.send("Error: !volume accepts integer values from 0 to 200.")
 
 	@commands.command(brief="Lists audio devices.", description="Outputs a list of audio devices present on the bot's host machine.  The indices can be used for `!set_device`.")
 	async def devices(self, context):
-		print("Device list requested.")
+		logging.info("Device list requested.")
 		# sounddevice.DeviceList device_list
 		device_list = None
 		try:
@@ -151,7 +151,7 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 	@commands.command(brief="Provides bot's current status.", description="Outputs current voice channel, audio device, and whether the audio source is active.")
 	async def status(self, context):
 		# present voice connection status, current audio device, and watched process status
-		print("Status requested")
+		logging.info("Status requested")
 
 		# String message
 		message = "Current Status:"
@@ -202,7 +202,7 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 			await context.send("Watched process is not supported in VBAN mode.")
 			return
 		
-		print("Watched process changed to {}".format(process_name))
+		logging.info("Watched process changed to {}".format(process_name))
 		if process_name is None:
 			config.set_config("System", "watched_process_name", "")
 			await context.send("Watched process has been cleared.")
@@ -238,7 +238,7 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 
 	@commands.command(brief="Shows roles with command permission.", description="Returns a list of roles that can issue commands to the bot.")
 	async def roles(self, context):
-		print("Whitelist requested.")
+		logging.info("Whitelist requested.")
 
 		# List[str] allowed_roles
 		allowed_roles = config.get_config_str_list("Commands", "role_whitelist")

@@ -2,6 +2,7 @@ import socket
 import struct
 import sounddevice as sd
 import errno
+import logging
 
 class VBAN_Recv(object):
 	"""docstring for VBAN_Recv"""
@@ -20,8 +21,8 @@ class VBAN_Recv(object):
 				self.sock.setsockopt(socket.SOL_IP, 15, 1) # optname 15 refers to IP_FREEBIND
 				self.sock.bind(socketAddr)
 			except Exception as e:
-				print(e)
-				print("Failed socket binding for {}{}{}.".format(self.senderIp, "/" if ipv6 else ":", port))
+				logging.exception()
+				logging.info("Failed socket binding for {}{}{}.".format(self.senderIp, "/" if ipv6 else ":", port))
 				self.sock = None
 				continue
 			break
@@ -49,8 +50,8 @@ class VBAN_Recv(object):
 		self.verbose = verbose
 		self.rawData = None
 		self.subprotocol = 0
-		print("pyVBAN-Recv Started")
-		print("Hint: Remeber that pyVBAN only support's PCM 16bits")
+		logging.info("pyVBAN-Recv Started")
+		logging.info("Hint: Remeber that pyVBAN only support's PCM 16bits")
 
 	def _correctPyAudioStream(self):
 		self.channels = self.stream_chanNum 
@@ -75,7 +76,7 @@ class VBAN_Recv(object):
 
 	def runonce(self):
 		if self.stream == None:
-			print("Quit has been called")
+			logging.info("Quit has been called")
 			return
 
 		try:
@@ -83,7 +84,7 @@ class VBAN_Recv(object):
 			self.rawData = data
 			self._parseHeader(data)
 			if self.verbose:
-				print("R"+self.stream_magicString+" "+str(self.stream_sampRate)+"Hz "+str(self.stream_sampNum)+"samp "+str(self.stream_chanNum)+"chan Format:"+str(self.stream_dataFormat)+" Name:"+self.stream_streamName+" Frame:"+str(self.stream_frameCounter))
+				logging.info("R"+self.stream_magicString+" "+str(self.stream_sampRate)+"Hz "+str(self.stream_sampNum)+"samp "+str(self.stream_chanNum)+"chan Format:"+str(self.stream_dataFormat)+" Name:"+self.stream_streamName+" Frame:"+str(self.stream_frameCounter))
 			self.rawPcm = data[28:]   #Header stops at 28
 			if self.stream_magicString == "VBAN" and self.subprotocol == 0:
 				if not self.stream_streamName == self.streamName:
@@ -98,7 +99,7 @@ class VBAN_Recv(object):
 			if e.errno == errno.EAGAIN or e.errno == errno.EWOULDBLOCK:
 				# we're not worried about a lack of data from the recvfrom() call
 				if self.verbose:
-					print("No incoming data.")
+					logging.info("No incoming data.")
 				# however, we do want to signal that we've run out of data to receive
 				raise IndexError()
 			else:
@@ -131,7 +132,7 @@ class VBAN_Send(object):
 				self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 				self.sock.connect(socketAddr)
 			except Exception as e:
-				print(e)
+				logging.info(e)
 				self.sock = None
 				continue
 			break
@@ -142,7 +143,7 @@ class VBAN_Send(object):
 		self.const_VBAN_SR = [6000, 12000, 24000, 48000, 96000, 192000, 384000, 8000, 16000, 32000, 64000, 128000, 256000, 512000,11025, 22050, 44100, 88200, 176400, 352800, 705600]
 		self.channels = sd.default.channels[0]
 		if sampRate not in self.const_VBAN_SR:
-			print("SampRate not valid/compatible")
+			logging.info("SampRate not valid/compatible")
 			return
 		self.samprate = sampRate
 		self.inDeviceIndex = inDeviceIndex
@@ -165,7 +166,7 @@ class VBAN_Send(object):
 		header += bytes(self.streamName + "\x00" * (16 - len(self.streamName)), 'utf-8')
 		header += struct.pack("<L",self.framecounter)
 		if self.verbose:
-			print("SVBAN "+str(self.samprate)+"Hz "+str(self.chunkSize)+"samp "+str(self.channels)+"chan Format:1 Name:"+self.streamName+" Frame:"+str(self.framecounter))
+			logging.info("SVBAN "+str(self.samprate)+"Hz "+str(self.chunkSize)+"samp "+str(self.channels)+"chan Format:1 Name:"+self.streamName+" Frame:"+str(self.framecounter))
 		return header+pcmData
 
 	def runonce(self):
@@ -175,7 +176,7 @@ class VBAN_Send(object):
 			self.rawData = self._constructFrame(self.rawPcm)
 			self.sock.sendto(self.rawData, (self.toIp,self.toPort))
 		except Exception as e:
-			print(e)
+			logging.exception()
 
 	def runforever(self):
 		while self.running:
@@ -215,4 +216,4 @@ class VBAN_SendText(object):
 			self.rawData = self._constructFrame(text)
 			self.sock.sendto(self.rawData, (self.toIp,self.toPort))
 		except Exception as e:
-			print(e)
+			logging.info(e)

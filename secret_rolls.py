@@ -42,11 +42,11 @@ def setup():
 		party_json: File = open("party.json", "r")
 		party = json.load(party_json)
 		party_json.close()
-		print("Party JSON loaded.")
+		logging.info("Party JSON loaded.")
 	else:
 		party_json: File = open("party.json", "x")
 		party_json.close()
-		print("Party JSON created.")
+		logging.info("Party JSON created.")
 
 	needed_init: bool = False
 	if "level" not in party:
@@ -65,7 +65,7 @@ def save_json():
 	party_json: File = open("party.json", "w")
 	json.dump(party, party_json, indent="\t")
 	party_json.close()
-	print("Party JSON updated.")
+	logging.info("Party JSON updated.")
 
 def convert_proficiency(proficiency: str) -> Proficiency:
 	# no case sensitivity
