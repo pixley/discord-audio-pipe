@@ -3,7 +3,7 @@ import sys
 
 # logging
 error_formatter = logging.Formatter(
-	fmt="%(asctime)s [%(funcname)s, line %(lineno)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+	fmt="%(asctime)s [%(funcName)s, line %(lineno)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
 )
 
 log_formatter = logging.Formatter(
@@ -22,11 +22,12 @@ log_handler = logging.FileHandler("DAP.log", encoding="utf-8", delay=True)
 log_handler.setLevel(logging.INFO)
 log_handler.setFormatter(log_formatter)
 
-print_handler = logging.StreamHandler(sys.stdout)
+print_handler = logging.StreamHandler()
 print_handler.setLevel(logging.INFO)
 print_handler.setFormatter(print_formatter)
 
-root_logger = logging.getLogger("")
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.INFO)
 root_logger.addHandler(error_handler)
 root_logger.addHandler(log_handler)
 root_logger.addHandler(print_handler)
