@@ -3,7 +3,7 @@ import sys
 
 # logging
 class log_only_filter:
-	def filter(record):
+	def filter(self, record):
 		if record.msg.startswith("##"):
 			# slice off leading "##"
 			record.msg = record.msg[2:]
