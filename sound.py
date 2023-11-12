@@ -6,7 +6,7 @@ import config
 import sounddevice as sd
 import threading
 import logging
-from plogging.info import pformat
+from pprint import pformat
 
 DEFAULT = 0
 sd.default.channels = 2
