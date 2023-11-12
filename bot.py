@@ -106,7 +106,7 @@ class Dap_Bot(commands.Bot):
 			logging.info("Attempting to clean up bad voice client(s).")
 			for voice_client in self.voice_clients:
 				if not voice_client.is_connected():
-					voice_client.disconnect(force = True)
+					await voice_client.disconnect(force = True)
 		if self.stream is not None:
 			self.stream.cleanup()
 			self.stream = None
