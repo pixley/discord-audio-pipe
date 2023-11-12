@@ -2,6 +2,15 @@ import logging
 import sys
 
 # logging
+class log_only_filter:
+	def filter(record):
+		if record.msg.startswith("##"):
+			# slice off leading "##"
+			record.msg = record.msg[2:]
+			return False
+		else
+			return True
+
 error_formatter = logging.Formatter(
 	fmt="%(asctime)s [%(funcName)s, line %(lineno)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
 )
@@ -22,9 +31,11 @@ log_handler = logging.FileHandler("DAP.log", encoding="utf-8", delay=True)
 log_handler.setLevel(logging.INFO)
 log_handler.setFormatter(log_formatter)
 
+print_filter = log_only_filter()
 print_handler = logging.StreamHandler()
 print_handler.setLevel(logging.INFO)
 print_handler.setFormatter(print_formatter)
+print_handler.addFilter(print_filter)
 
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.DEBUG)
@@ -116,7 +127,9 @@ async def main(bot):
 
 # run program
 
-logging.info("\n=========\nAPP START\n=========")	# Since log is append, helps differentiate sessions
+# Since log is append, helps differentiate sessions
+# Leading "##" means that it only gets recorded in logs and isn't printed to console
+logging.info("##\n=========\nAPP START\n=========")
 
 config.setup_config("settings.cfg")
 sroll.setup()
