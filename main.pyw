@@ -10,7 +10,7 @@ log_formatter = logging.Formatter(
 )
 
 print_formatter = logging.Formatter(
-	fmt="[%(levelname)s] %(message)s""
+	fmt="[%(levelname)s] %(message)s"
 )
 
 error_handler = logging.FileHandler("DAP_errors.log", delay=True)
