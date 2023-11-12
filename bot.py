@@ -102,7 +102,10 @@ class Dap_Bot(commands.Bot):
 				logging.error("Trying to disconnect from a voice channel but voice client's state is {}".format(self.voice._connection.state))
 			self.voice = None
 		else:
-			logging.error("Trying to disconnect from a voice channel without valid voice client.")
+			# Handles case where VoiceChannel.connect() hasn't returned
+			# Kind of a shotgun-blast, but we're just going to get rid of any voice clients that aren't fully connected
+			# This prevents the bot from getting "stuck" in the voice channel
+			logging.error("Trying to disconnect from a voice channel without known voice client.")
 			logging.info("Attempting to clean up bad voice client(s).")
 			for voice_client in self.voice_clients:
 				if not voice_client.is_connected():
