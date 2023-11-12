@@ -19,11 +19,11 @@ error_handler.setLevel(logging.ERROR)
 error_handler.setFormatter(error_formatter)
 
 log_handler = logging.FileHandler("DAP.log", encoding="utf-8", delay=True)
-# Not setting level means all messages go to log
+log_handler.setLevel(logging.INFO)
 log_handler.setFormatter(log_formatter)
 
 print_handler = logging.StreamHandler(sys.stdout)
-# Not setting level means all messages are printed
+print_handler.setLevel(logging.INFO)
 print_handler.setFormatter(print_formatter)
 
 base_logger = logging.getLogger()
