@@ -91,6 +91,15 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 
 				logging.info("Playing audio in {}".format(channel.name))
 				await context.send("Joined channel {}.".format(channel.name))
+			except ClientException:
+				logging.warning("Attempted to join channel bot is already in.")
+				await context.send("Error: Already in channel {}".format(channel.name))
+			except asyncio.TimeoutError:
+				logging.error("Join timeout, channel {}.".format(channel_name))
+				await context.send("Error: Attempt to join channel {} timed out.  Contact admin for assistance.".format(channel_name))
+			except discord.LoginFailure:
+				logging.error("Failed to initialize voice client.")
+				await context.send("Error: Could not initialize voice connection.")
 			except Exception:
 				logging.exception("Error on channel join")
 				await context.send("Error joining channel {}.".format(channel_name))

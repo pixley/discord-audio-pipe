@@ -67,7 +67,7 @@ class Dap_Bot(commands.Bot):
 					logging.info("Device {} selected".format(new_id))
 					return True
 				else:
-					logging.info("Error: invalid device id or no devices available!")
+					logging.error("Invalid device id or no devices available!")
 					return False
 		else:
 			return False
@@ -84,8 +84,15 @@ class Dap_Bot(commands.Bot):
 
 	#params: Discord.VoiceChannel channel
 	async def join_voice_channel(self, channel):
-		self.voice = await channel.connect()
-		self.start_stream()
+		self.voice = await channel.connect(timeout=10.0, reconnect=False)
+		if self.voice is None:
+			raise discord.LoginFailure
+		elif self.voice.is_connected is False:
+			await self.voice.disconnect()
+			self.voice = None
+			raise discord.LoginFailure
+		else:
+			self.start_stream()
 
 	async def leave_voice_channel(self):
 		if self.voice is not None:
