@@ -24,6 +24,7 @@ class Dap_Bot(commands.Bot):
 		self.use_vban = config.get_config_bool("Audio", "use_vban")
 		ipv6 = config.get_config_bool("System", "ipv6")
 		if ipv6:
+			logging.info("Injecting IPv6 support")
 			# need to inject IPv6 support before attempting to connect
 			# as of 12 Nov 2023, Discord's API doesn't actually support IPv6, but this is still needed if using NAT64
 			self.connector = aiohttp.TCPConnector(limit=0, family=socket.AF_INET6)

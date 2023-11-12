@@ -112,6 +112,8 @@ async def main(bot):
 
 # run program
 
+logging.info("\n=========\nAPP START\n=========")	# Since log is append, helps differentiate sessions
+
 config.setup_config("settings.cfg")
 sroll.setup()
 # discord.Intents all_intents
