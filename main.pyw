@@ -27,7 +27,7 @@ print_handler.setLevel(logging.INFO)
 print_handler.setFormatter(print_formatter)
 
 root_logger = logging.getLogger()
-root_logger.setLevel(logging.INFO)
+root_logger.setLevel(logging.DEBUG)
 root_logger.addHandler(error_handler)
 root_logger.addHandler(log_handler)
 root_logger.addHandler(print_handler)
@@ -79,6 +79,9 @@ if args.verbose:
 	debug_logger = logging.getLogger("discord")
 	debug_logger.setLevel(logging.DEBUG)
 	debug_logger.addHandler(debug_handler)
+	
+	# Also print debug statements under verbose
+	print_handler.setLevel(logging.DEBUG)
 
 # main
 async def main(bot):
