@@ -10,6 +10,7 @@ from discord.ext import commands
 import secret_rolls as sroll
 import datetime
 import zoneinfo
+import asyncio
 
 # -------------------------
 # Bot command global checks
