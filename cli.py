@@ -91,7 +91,7 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 
 				logging.info("Playing audio in {}".format(channel.name))
 				await context.send("Joined channel {}.".format(channel.name))
-			except ClientException:
+			except discord.ClientException:
 				logging.warning("Attempted to join channel bot is already in.")
 				await context.send("Error: Already in channel {}".format(channel.name))
 			except asyncio.TimeoutError:

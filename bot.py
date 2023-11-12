@@ -101,6 +101,8 @@ class Dap_Bot(commands.Bot):
 			if connection_error:
 				logging.error("Trying to disconnect from a voice channel but voice client's state is {}".format(self.voice._connection.state))
 			self.voice = None
+		else:
+			logging.error("Trying to disconnect from a voice channel without valid voice client.")
 		if self.stream is not None:
 			self.stream.cleanup()
 			self.stream = None
