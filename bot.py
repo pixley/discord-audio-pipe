@@ -109,14 +109,14 @@ class Dap_Bot(commands.Bot):
 		# discord.Guild guild
 		guild = self.get_guild(guild_id)
 		if guild is None:
-			logging.info("Error: guild doesn't exist")
+			logging.error("Guild doesn't exist")
 			return
 		# discord.abd.GuildChannel channel
 		channel = guild.get_channel(channel_id)
 		if channel is None:
-			logging.info("Error: channel doesn't exist")
+			logging.error("Channel doesn't exist")
 			return
 		if isinstance(channel, discord.TextChannel):
 			await channel.send(message)
 		else:
-			logging.info("Error: channel is no longer a text channel.")
+			logging.error("Channel is no longer a text channel.")

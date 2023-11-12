@@ -20,9 +20,8 @@ class VBAN_Recv(object):
 				self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 				self.sock.setsockopt(socket.SOL_IP, 15, 1) # optname 15 refers to IP_FREEBIND
 				self.sock.bind(socketAddr)
-			except Exception as e:
-				logging.exception()
-				logging.info("Failed socket binding for {}{}{}.".format(self.senderIp, "/" if ipv6 else ":", port))
+			except Exception:
+				logging.exception("Failed socket binding for {}{}{}.".format(self.senderIp, "/" if ipv6 else ":", port))
 				self.sock = None
 				continue
 			break

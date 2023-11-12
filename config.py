@@ -35,7 +35,7 @@ def setup_config(cfg_file_name):
 
 	config.read(use_file_name)
 	if config.sections == []:
-		logging.info("{} is empty!  Cannot load!".format(use_file_name))
+		logging.error("{} is empty!  Cannot load!".format(use_file_name))
 		return False
 	else:
 		logging.info("{} successfully loaded".format(use_file_name))
@@ -115,7 +115,7 @@ def config_list_add(section, key, value):
 			set_config(section, key, value_str)
 			return True
 		else:
-			logging.info("Attention: Value \"{}\" is already in [{}] {}.".format(value_str, section, key))
+			logging.warning("Attention: Value \"{}\" is already in [{}] {}.".format(value_str, section, key))
 			return False
 
 # params: str section, str key, ??? value
@@ -128,7 +128,7 @@ def config_list_remove(section, key, value):
 	list_str = get_config(section, key)
 
 	if len(list_str) == 0:
-		logging.info("Attention: Cannot remove value \"{}\" from empty list [{}] {}.".format(value_str, section, key))
+		logging.warning("Attention: Cannot remove value \"{}\" from empty list [{}] {}.".format(value_str, section, key))
 		return False
 	elif list_str == value_str:
 		list_str = ""
@@ -145,7 +145,7 @@ def config_list_remove(section, key, value):
 			set_config(section, key, list_str)
 			return True
 		else:
-			logging.info("Attention: Cannot remove value \"{}\" from [{}] {} because the list doesn't contain it.".format(value_str, section, key))
+			logging.warning("Attention: Cannot remove value \"{}\" from [{}] {} because the list doesn't contain it.".format(value_str, section, key))
 			return False
 
 # params: str value
@@ -182,7 +182,7 @@ async def save_config():
 		config.write(config_file)
 		logging.info("{} successfully saved".format(file_name))
 	else:
-		logging.info("{} is missing!  Cannot save!".format(file_name))
+		logging.error("{} is missing!  Cannot save!".format(file_name))
 
 # params: str date, str time
 # return datetime.DateTime

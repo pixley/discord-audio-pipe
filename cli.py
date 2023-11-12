@@ -79,7 +79,7 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 					channel_id = channel.id
 		
 		if channel_id == 0:
-			logging.info("Error: User wasn't in a voice channel and did not provide the name of one.")
+			logging.warning("User wasn't in a voice channel and did not provide the name of one.")
 			await context.send("Error: User must be in a voice channel or specify a voice channel's name when calling !join.")
 		else:
 			try:
@@ -107,7 +107,7 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 			logging.info("Left channel {}".format(channel.name))
 			await context.send("Left channel {}.".format(channel.name))
 		else:
-			logging.info("Error: Not in voice channel")
+			logging.warning("Not in voice channel")
 			await context.send("Error: Bot was not in a voice channel on this server.")
 
 	@commands.command(brief="Check or adjust volume.", description="Changes volume to specified percentage or reports the current volume.")
@@ -124,7 +124,7 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 				logging.info("Volume changed")
 				await context.send("Volume changed to {}%".format(vol))
 			else:
-				logging.info("Error: bad volume value")
+				logging.warning("Bad volume value")
 				await context.send("Error: !volume accepts integer values from 0 to 200.")
 
 	@commands.command(brief="Lists audio devices.", description="Outputs a list of audio devices present on the bot's host machine.  The indices can be used for `!set_device`.")
@@ -136,7 +136,7 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 			device_list = sound.query_devices()
 			await context.send(sound.query_devices())
 		except sound.DeviceNotFoundError:
-			logging.exception("Error: exception in sound.query_devices()")
+			logging.exception("exception in sound.query_devices()")
 			await context.send("Error: Could not retrieve device list.  Contact administrator.")
 
 	@commands.command(brief="Changes audio device.", description="Changes which audio device the bot is outputting from, based on indices presented in `!devices`")
@@ -180,7 +180,7 @@ class VoiceCog(commands.Cog, name="Voice Commands"):
 				device = sound.get_device(context.bot.device_id)
 				message = message + "\nCurrent audio device is [{}] {}".format(context.bot.device_id, device["name"])
 			except sound.DeviceNotFoundError:
-				logging.exception("Error: exception in sound.get_device()")
+				logging.exception("exception in sound.get_device()")
 				message = message + "\nInvalid audio device.  Please check the list of audio devices with !devices and set a new one using !set_device."
 
 			# Check watched process

@@ -3,7 +3,7 @@ import sys
 
 # logging
 error_formatter = logging.Formatter(
-	fmt="%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+	fmt="%(asctime)s [%(funcname)s, line %(lineno)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
 )
 
 log_formatter = logging.Formatter(
@@ -26,10 +26,10 @@ print_handler = logging.StreamHandler(sys.stdout)
 print_handler.setLevel(logging.INFO)
 print_handler.setFormatter(print_formatter)
 
-base_logger = logging.getLogger()
-base_logger.addHandler(error_handler)
-base_logger.addHandler(log_handler)
-base_logger.addHandler(print_handler)
+root_logger = logging.getLogger()
+root_logger.addHandler(error_handler)
+root_logger.addHandler(log_handler)
+root_logger.addHandler(print_handler)
 
 from ctypes.util import find_library
 import cli
@@ -90,7 +90,7 @@ async def main(bot):
 			token_file = open("token.txt", "r")
 			token = token_file.read()
 			if token == "":
-				logging.info("Error: no token specified.")
+				logging.error("No token specified.")
 				return
 			token_file.close()
 
@@ -101,10 +101,10 @@ async def main(bot):
 		await bot.start(token)
 
 	except FileNotFoundError:
-		logging.info("No Token Provided")
+		logging.error("Could not find 'token.txt'")
 
 	except discord.errors.LoginFailure:
-		logging.info("Login Failed: Please check if the token is correct")
+		logging.error("Login Failed: Please check if the token is correct")
 
 	except Exception as e:
 		logging.exception("Error on main")
@@ -145,7 +145,7 @@ if not discord.opus.is_loaded():
 		discord.opus.load_opus(opus_lib_str)
 		logging.info("Opus libraries successfully loaded!")
 	except:
-		logging.info("Could not load libopus...  Audio unlikely to function.")
+		logging.error("Could not load libopus...  Audio unlikely to function.")
 else:
 	logging.info("Opus libraries loaded automatically!")
 
@@ -153,8 +153,8 @@ try:
 	loop.run_until_complete(main(bot))
 except KeyboardInterrupt:
 	logging.info("Received keyboard interrupt!")
-except Exception as e:
-	logging.info(e)
+except Exception:
+	logging.exception()
 logging.info("Exiting...")
 loop.run_until_complete(bot.close())
 # this sleep prevents a bugged exception on Windows

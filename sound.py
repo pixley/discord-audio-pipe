@@ -155,8 +155,7 @@ class VBANStream(discord.AudioSource):
 				logging.info("VBAN task cancelled!")
 				self.receiver.quit()
 		except Exception as e:
-			logging.info(e)
-			logging.info("Connection to {} failed.".format(host))
+			logging.exception("Connection to {} failed.".format(host))
 		self.stream_buffer = bytearray()
 		self.reciever = None
 
@@ -168,7 +167,7 @@ class PCMStream(discord.AudioSource):
 
 	def read(self):
 		if self.stream is None:
-			logging.info("Audio stream unavailable.")
+			logging.error("Audio stream unavailable.")
 			return
 		
 		# Discord reads 20 ms worth of audio at a time (20 ms * 50 == 1000 ms == 1 sec)
