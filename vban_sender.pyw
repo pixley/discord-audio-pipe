@@ -31,9 +31,11 @@ async def main():
 	try:
 		# vban.VBAN_Send sender
 		sender = vban.VBAN_Send(host, port, stream_name, sd.default.samplerate, device_id, ipv6=ipv6, verbose=verbose)
-		# str port_separator
-		port_separator = "/" if ipv6 else ":"
-		print("Beginning VBAN stream \"{}\" to {}{}{}".format(stream_name, sender.toIp, port_separator, port))
+		# str printed_ip
+		printed_ip = sender.toIp
+		if ipv6:
+			printed_ip = "[" + printed_ip + "]"
+		print("Beginning VBAN stream \"{}\" to {}:{}".format(stream_name, printed_ip, port))
 		try:
 			while True:
 				sender.runonce()

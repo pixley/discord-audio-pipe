@@ -129,13 +129,19 @@ class VBANStream(discord.AudioSource):
 		ipv6 = config.get_config_bool("VBAN", "ipv6")
 		# str stream_name
 		stream_name = config.get_config_string("VBAN", "stream_name")
+		
+		if host == "any":
+			# if we want any incoming host, then we pass None into VBAN_Recv
+			host = None
 
 		try:
 			# vban.VBAN_Recv receiver
 			self.receiver = vban.VBAN_Recv(host, stream_name, port, 0, ipv6=ipv6, verbose=self.verbose, stream=self)
-			# str port_separator
-			port_separator = "/" if ipv6 else ":"
-			print("VBAN receiver initalized on {}{}{}!".format(self.receiver.senderIp, port_separator, port))
+			# str printed_ip
+			printed_ip = self.receiver.senderIp
+			if ipv6:
+				printed_ip = "[" + printed_ip + "]"
+			print("VBAN receiver initalized on {}:{}!".format(printed_ip, port))
 
 			try:
 				while True:

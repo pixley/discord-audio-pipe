@@ -7,7 +7,7 @@ device_id = 0
 use_vban = True
 
 [VBAN]
-incoming_host = 127.0.0.1
+incoming_host = any
 incoming_port = 6980
 stream_name = example
 verbose = False
