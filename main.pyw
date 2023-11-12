@@ -12,15 +12,15 @@ class log_only_filter:
 			return True
 
 error_formatter = logging.Formatter(
-	fmt="%(asctime)s [%(funcName)s, line %(lineno)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+	fmt="%(asctime)s [%(funcName)s, line %(lineno)s]%(name)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
 )
 
 log_formatter = logging.Formatter(
-	fmt="%(asctime)s [%(levelname)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+	fmt="%(asctime)s [%(levelname)s]%(name)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
 )
 
 print_formatter = logging.Formatter(
-	fmt="[%(levelname)s] %(message)s"
+	fmt="[%(levelname)s]%(name)s %(message)s"
 )
 
 error_handler = logging.FileHandler("DAP_errors.log", encoding="utf-8", delay=True)
