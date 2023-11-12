@@ -87,7 +87,7 @@ class Dap_Bot(commands.Bot):
 		self.voice = await channel.connect(timeout=10.0, reconnect=False)
 		if self.voice is None:
 			raise discord.LoginFailure
-		elif self.voice.is_connected is False:
+		elif self.voice.is_connected() is False:
 			await self.voice.disconnect()
 			self.voice = None
 			raise discord.LoginFailure
