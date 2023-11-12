@@ -26,7 +26,7 @@ print_handler = logging.StreamHandler(sys.stdout)
 print_handler.setLevel(logging.INFO)
 print_handler.setFormatter(print_formatter)
 
-root_logger = logging.getLogger()
+root_logger = logging.getLogger("")
 root_logger.addHandler(error_handler)
 root_logger.addHandler(log_handler)
 root_logger.addHandler(print_handler)
