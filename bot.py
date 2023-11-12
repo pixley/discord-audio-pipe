@@ -103,6 +103,10 @@ class Dap_Bot(commands.Bot):
 			self.voice = None
 		else:
 			logging.error("Trying to disconnect from a voice channel without valid voice client.")
+			logging.info("Attempting to clean up bad voice client(s).")
+			for voice_client in self.voice_clients():
+				if not voice_client.is_connected():
+					voice_client.disconnect(force = True)
 		if self.stream is not None:
 			self.stream.cleanup()
 			self.stream = None
