@@ -97,8 +97,8 @@ class Dap_Bot(commands.Bot):
 	async def leave_voice_channel(self):
 		if self.voice is not None:
 			connection_error = not self.voice.is_connected()
-			await self.voice.disconnect(force = not connection_error)
-			if not connection_error:
+			await self.voice.disconnect(force = connection_error)
+			if connection_error:
 				logging.error("Trying to disconnect from a voice channel but voice client's state is {}".format(self.voice._connection.state))
 			self.voice = None
 		if self.stream is not None:
