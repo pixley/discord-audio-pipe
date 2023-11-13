@@ -1,5 +1,6 @@
 import discord
 from discord.voice_state import VoiceConnectionState
+from discord.gateway import DiscordVoiceWebSocket, ConnectionFlowState
 import logging
 import config
 import asyncio
@@ -17,11 +18,20 @@ class IPv6VoiceClient(discord.VoiceClient):
 		return IPv6VoiceConnectionState(self)
 
 class IPv6VoiceConnectionState(VoiceConnectionState):
+	async def _connect_websocket(self, resume: bool) -> DiscordVoiceWebSocket:
+		# the following is a copy-pasta of VoiceConnectionState._connect_websocket(),
+		# but replacing the voice web socket class
+		_log.debug('Connecting IPv6 websocket')
+		ws = await IPv6VoiceWebSocket.from_connection_state(self, resume=resume, hook=self.hook)
+		self.state = ConnectionFlowState.websocket_connected
+		return ws
+		
+class IPv6VoiceWebSocket(DiscordVoiceWebSocket):
 	async def discover_ip(self) -> Tuple[str, int]:
 		if not config.get_config_bool("System", "ipv6"):
 			return super().discover_ip(self)
 		else:
-			# the following is basically a copy-pasta of VoiceConnectionState.discover_ip(),
+			# the following is basically a copy-pasta of DiscordVoiceWebSocket.discover_ip(),
 			# but accounting for IPv6
 			state = self._connection
 			packet = bytearray(74)
