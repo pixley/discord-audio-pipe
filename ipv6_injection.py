@@ -7,6 +7,7 @@ import asyncio
 import struct
 import threading
 import concurrent.futures
+import socket
 
 from typing import Tuple
 
@@ -25,6 +26,13 @@ class IPv6VoiceConnectionState(VoiceConnectionState):
 		ws = await IPv6VoiceWebSocket.from_connection_state(self, resume=resume, hook=self.hook)
 		self.state = ConnectionFlowState.websocket_connected
 		return ws
+		
+	def _create_socket(self) -> None:
+		# the following is a copy-pasta of VoiceConnectionState._create_socket(),
+		# but making the socket IPv6
+		self.socket = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+		self.socket.setblocking(False)
+		self._socket_reader.resume()
 		
 class IPv6VoiceWebSocket(DiscordVoiceWebSocket):
 	async def discover_ip(self) -> Tuple[str, int]:

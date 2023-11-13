@@ -28,6 +28,9 @@ class Dap_Bot(commands.Bot):
 			logging.info("Injecting IPv6 support")
 			# need to inject IPv6 support before attempting to connect
 			# as of 12 Nov 2023, Discord's API doesn't actually support IPv6, but this is still needed if using NAT64
+			
+			# This could be done similarly to the classes in ipv6_injection, but the HTTPClient
+			# already exists, and it's cool with pre-made TCPConnectors.
 			self.http.connector = aiohttp.TCPConnector(limit=0, family=socket.AF_INET6)
 
 	def start_stream(self):
