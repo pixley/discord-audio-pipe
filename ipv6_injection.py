@@ -13,6 +13,7 @@ _log = logging.getLogger(__name__)
 
 class IPv6VoiceClient(discord.VoiceClient):
 	def create_connection_state(self) -> VoiceConnectionState:
+		_log.debug('Creating IPv6 connection state')
 		return IPv6VoiceConnectionState(self)
 
 class IPv6VoiceConnectionState(VoiceConnectionState):
@@ -28,7 +29,7 @@ class IPv6VoiceConnectionState(VoiceConnectionState):
 			struct.pack_into('>H', packet, 2, 70)  # 70 = Length
 			struct.pack_into('>I', packet, 4, state.ssrc)
 
-			_log.debug('Sending ip discovery packet')
+			_log.debug('Sending ipv6 discovery packet')
 			await self.loop.sock_sendall(state.socket, packet)
 
 			fut: asyncio.Future[bytes] = self.loop.create_future()
@@ -42,7 +43,7 @@ class IPv6VoiceConnectionState(VoiceConnectionState):
 			state.add_socket_listener(get_ip_packet)
 			recv = await fut
 
-			_log.debug('Received ip discovery packet: %s', recv)
+			_log.debug('Received ipv6 discovery packet: %s', recv)
 
 			# the ip is ascii starting at the 8th byte and ending at the first null
 			ip_start = 8
