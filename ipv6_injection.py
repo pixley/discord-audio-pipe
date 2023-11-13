@@ -45,8 +45,8 @@ class IPv6VoiceWebSocket(DiscordVoiceWebSocket):
 			fut: asyncio.Future[bytes] = self.loop.create_future()
 
 			def get_ip_packet(data: bytes):
-				if data[1] == 0x02: # and len(data) == 74:
-					_log.debug('Length of IPv6 discovery data: {}'.format(len(data)))
+				_log.debug('IPv6 discovery response packet data (length {}):\n{}'.format(len(data), str(data)))
+				if data[1] == 0x02 and len(data) == 74:
 					self.loop.call_soon_threadsafe(fut.set_result, data)
 
 			_log.debug('Waiting for ipv6 discovery packet response')
