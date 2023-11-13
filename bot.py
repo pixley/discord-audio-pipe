@@ -7,7 +7,7 @@ import datetime
 import asyncio
 import socket
 import aiohttp
-import ipv6_injection
+from ipv6_injection import IPv6VoiceClient
 
 class Dap_Bot(commands.Bot):
 	def __init__(self, command_prefix, intents):
