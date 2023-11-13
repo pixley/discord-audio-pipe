@@ -7,6 +7,7 @@ import datetime
 import asyncio
 import socket
 import aiohttp
+import ipv6_injection
 
 class Dap_Bot(commands.Bot):
 	def __init__(self, command_prefix, intents):
@@ -84,7 +85,7 @@ class Dap_Bot(commands.Bot):
 
 	#params: Discord.VoiceChannel channel
 	async def join_voice_channel(self, channel):
-		self.voice = await channel.connect(timeout=10.0, reconnect=False)
+		self.voice = await channel.connect(timeout=config.get_config_float("System", "voice_timeout"), reconnect=True, cls=IPv6VoiceClient)
 		if self.voice is None:
 			raise discord.LoginFailure
 		elif self.voice.is_connected() is False:

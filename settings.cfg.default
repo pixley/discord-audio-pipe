@@ -1,6 +1,8 @@
 [System]
 watched_process_name = 
 ipv6 = True
+voice_timeout = 10.0
+
 
 [Audio]
 volume = 0.5
