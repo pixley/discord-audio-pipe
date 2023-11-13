@@ -46,7 +46,7 @@ class IPv6VoiceWebSocket(DiscordVoiceWebSocket):
 		ipv6: str = '64:ff9b::' + split_ipv4_hex[0] + split_ipv4_hex[1] + ':' + split_ipv4_hex[2] + split_ipv4_hex[3]
 		_log.debug('Translated address to {}'.format(ipv6))
 		data['ip'] = ipv6
-		super().initial_connection(data)
+		await super().initial_connection(data)
 
 	async def discover_ip(self) -> Tuple[str, int]:
 		if not config.get_config_bool("System", "ipv6"):
