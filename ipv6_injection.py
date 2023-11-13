@@ -1,5 +1,5 @@
 import discord
-import discord.voice_state
+from discord.voice_state import VoiceConnectionState
 import logging
 import config
 import asyncio
@@ -12,15 +12,15 @@ from typing import Tuple
 _log = logging.getLogger(__name__)
 
 class IPv6VoiceClient(discord.VoiceClient):
-	def create_connection_state(self) -> discord.VoiceConnectionState:
+	def create_connection_state(self) -> VoiceConnectionState:
 		return IPv6VoiceConnectionState(self)
 
-class IPv6VoiceConnectionState(discord.VoiceConnectionState):
+class IPv6VoiceConnectionState(VoiceConnectionState):
 	async def discover_ip(self) -> Tuple[str, int]:
 		if not config.get_config_bool("System", "ipv6"):
 			return super().discover_ip(self)
 		else:
-			# the following is basically a copy-pasta of discord.VoiceConnectionState.discover_ip(),
+			# the following is basically a copy-pasta of VoiceConnectionState.discover_ip(),
 			# but accounting for IPv6
 			state = self._connection
 			packet = bytearray(74)
