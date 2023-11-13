@@ -9,7 +9,7 @@ import threading
 import concurrent.futures
 import socket
 
-from typing import Tuple
+from typing import Tuple, Dict, Any, List
 
 _log = logging.getLogger(__name__)
 
@@ -35,9 +35,22 @@ class IPv6VoiceConnectionState(VoiceConnectionState):
 		self._socket_reader.resume()
 		
 class IPv6VoiceWebSocket(DiscordVoiceWebSocket):
+	async def initial_connection(self, data: Dict[str, Any]) -> None:
+		# need to translate the IPv4 address Discord sends to us to an IPv6 address for use
+		# with our socket.  per NAT64 standards, we'll format it with the prefix "64:ff9b"
+		# and then fill the bottom 32 "bits" with the IPv4 address as hex
+		ipv4: str = data['ip']
+		_log.debug('Need to translate IPv4 address {} to IPv6'.format(ipv4))
+		split_ipv4: List[str] = ipv4.split('.')
+		split_ipv4_hex: List[str] = [hex(int(ip_byte))[2:] for ip_byte in split_ipv4]
+		ipv6: str = '64:ff9b::' + split_ipv4_hex[0] + split_ipv4_hex[1] + ':' split_ipv4_hex[2] + split_ipv4_hex[3]
+		_log.debug('Translated address to {}'.format(ipv6))
+		data['ip'] = ipv6
+		super().initial_connection(data)
+
 	async def discover_ip(self) -> Tuple[str, int]:
 		if not config.get_config_bool("System", "ipv6"):
-			return super().discover_ip(self)
+			return super().discover_ip()
 		else:
 			# the following is basically a copy-pasta of DiscordVoiceWebSocket.discover_ip(),
 			# but accounting for IPv6
