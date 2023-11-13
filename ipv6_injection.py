@@ -1,6 +1,6 @@
 import discord
-from discord.voice_state import VoiceConnectionState
-from discord.gateway import DiscordVoiceWebSocket, ConnectionFlowState
+from discord.voice_state import VoiceConnectionState, ConnectionFlowState
+from discord.gateway import DiscordVoiceWebSocket
 import logging
 import config
 import asyncio
