@@ -1,4 +1,5 @@
 import discord
+import discord.voice_state
 import logging
 import config
 import asyncio
