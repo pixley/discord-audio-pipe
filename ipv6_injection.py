@@ -49,6 +49,7 @@ class IPv6VoiceWebSocket(DiscordVoiceWebSocket):
 					_log.debug('Length of IPv6 discovery data: {}'.format(len(data)))
 					self.loop.call_soon_threadsafe(fut.set_result, data)
 
+			_log.debug('Waiting for ipv6 discovery packet response')
 			fut.add_done_callback(lambda f: state.remove_socket_listener(get_ip_packet))
 			state.add_socket_listener(get_ip_packet)
 			recv = await fut
