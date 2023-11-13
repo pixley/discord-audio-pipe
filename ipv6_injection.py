@@ -43,7 +43,7 @@ class IPv6VoiceWebSocket(DiscordVoiceWebSocket):
 		_log.debug('Need to translate IPv4 address {} to IPv6'.format(ipv4))
 		split_ipv4: List[str] = ipv4.split('.')
 		split_ipv4_hex: List[str] = [hex(int(ip_byte))[2:] for ip_byte in split_ipv4]
-		ipv6: str = '64:ff9b::' + split_ipv4_hex[0] + split_ipv4_hex[1] + ':' split_ipv4_hex[2] + split_ipv4_hex[3]
+		ipv6: str = '64:ff9b::' + split_ipv4_hex[0] + split_ipv4_hex[1] + ':' + split_ipv4_hex[2] + split_ipv4_hex[3]
 		_log.debug('Translated address to {}'.format(ipv6))
 		data['ip'] = ipv6
 		super().initial_connection(data)
