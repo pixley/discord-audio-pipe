@@ -18,7 +18,8 @@ class VBAN_Recv(object):
 			if self.any_sender:
 				# socket.getaddrinfo() gives localhost for the ip address if the host is None, but
 				# that's not what socket.bind() wants
-				socketAddr[0] = ""
+				# stupid tuples and immutability...
+				socketAddr = ("", socketAddr[1:])
 			self.senderIp = socketAddr[0]	# The first element of the sockAddr tuple is the IP address under both IPv4 and IPv6
 			try:
 				self.sock = socket.socket(family, socket.SOCK_DGRAM) # UDP
