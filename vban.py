@@ -11,10 +11,14 @@ class VBAN_Recv(object):
 		self.streamName = streamName
 		self.const_VBAN_SRList = [6000, 12000, 24000, 48000, 96000, 192000, 384000, 8000, 16000, 32000, 64000, 128000, 256000, 512000, 11025, 22050, 44100, 88200, 176400, 352800, 705600] 
 		family = socket.AF_INET6 if ipv6 else socket.AF_INET
-		self.anySender = senderHost is None
+		self.any_sender = senderHost is None
 		for addrInfoTuple in socket.getaddrinfo(senderHost, port, family=family, type=socket.SOCK_DGRAM, proto=socket.IPPROTO_UDP):
 			# Break up the tuple
 			famInfo, typeInfo, protoInfo, canonName, socketAddr = addrInfoTuple
+			if self.any_sender:
+				# socket.getaddrinfo() gives localhost for the ip address if the host is None, but
+				# that's not what socket.bind() wants
+				socketAddr[0] = ""
 			self.senderIp = socketAddr[0]	# The first element of the sockAddr tuple is the IP address under both IPv4 and IPv6
 			try:
 				self.sock = socket.socket(family, socket.SOCK_DGRAM) # UDP
@@ -22,7 +26,12 @@ class VBAN_Recv(object):
 				self.sock.setsockopt(socket.SOL_IP, 15, 1) # optname 15 refers to IP_FREEBIND
 				self.sock.bind(socketAddr)
 			except Exception:
-				logging.exception("Failed socket binding for {}{}{}.".format(self.senderIp, "/" if ipv6 else ":", port))
+				printed_ip = self.senderIp
+				if self.any_sender:
+					printed_ip = "::/0" if ipv6 else "0.0.0.0/0"
+				if ipv6:
+					printed_ip = "[" + printed_ip + "]"
+				logging.exception("Failed socket binding for {}:{}.".format(printed_ip, port))
 				self.sock = None
 				continue
 			break

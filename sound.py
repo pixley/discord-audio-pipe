@@ -139,10 +139,12 @@ class VBANStream(discord.AudioSource):
 			# vban.VBAN_Recv receiver
 			self.receiver = vban.VBAN_Recv(host, stream_name, port, 0, ipv6=ipv6, verbose=self.verbose, stream=self)
 			# str logging.infoed_ip
-			logging.infoed_ip = self.receiver.senderIp
-			if ipv6:
-				logging.infoed_ip = "[" + logging.infoed_ip + "]"
-			logging.info("VBAN receiver initalized on {}:{}!".format(logging.infoed_ip, port))
+			printed_ip = self.receiver.senderIp
+			if host is None:
+				printed_ip = "::/0" if ipv6 else "0.0.0.0/0"
+			elif ipv6:
+				printed_ip = "[" + printed_ip + "]"
+			logging.info("VBAN receiver initalized on {}:{}!".format(printed_ip, port))
 
 			try:
 				while True:
