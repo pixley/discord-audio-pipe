@@ -11,12 +11,13 @@ class VBAN_Recv(object):
 		self.streamName = streamName
 		self.const_VBAN_SRList = [6000, 12000, 24000, 48000, 96000, 192000, 384000, 8000, 16000, 32000, 64000, 128000, 256000, 512000, 11025, 22050, 44100, 88200, 176400, 352800, 705600] 
 		family = socket.AF_INET6 if ipv6 else socket.AF_INET
+		self.anySender = senderHost is None
 		for addrInfoTuple in socket.getaddrinfo(senderHost, port, family=family, type=socket.SOCK_DGRAM, proto=socket.IPPROTO_UDP):
 			# Break up the tuple
 			famInfo, typeInfo, protoInfo, canonName, socketAddr = addrInfoTuple
 			self.senderIp = socketAddr[0]	# The first element of the sockAddr tuple is the IP address under both IPv4 and IPv6
 			try:
-				self.sock = socket.socket(socket.AF_INET6 if ipv6 else socket.AF_INET, socket.SOCK_DGRAM) # UDP
+				self.sock = socket.socket(family, socket.SOCK_DGRAM) # UDP
 				self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 				self.sock.setsockopt(socket.SOL_IP, 15, 1) # optname 15 refers to IP_FREEBIND
 				self.sock.bind(socketAddr)
@@ -88,7 +89,7 @@ class VBAN_Recv(object):
 			if self.stream_magicString == "VBAN" and self.subprotocol == 0:
 				if not self.stream_streamName == self.streamName:
 					return
-				if not addr[0] == self.senderIp:
+				if self.anySender or ( addr[0] != self.senderIp ):
 					return
 				if self.channels != self.stream_chanNum or self.sampRate != self.stream_sampRate:
 					self._correctPyAudioStream()
@@ -125,9 +126,10 @@ class VBAN_Send(object):
 		for addrInfoTuple in socket.getaddrinfo(toHost, toPort, type=socket.SOCK_DGRAM, family=family, proto=socket.IPPROTO_UDP):
 			# Break up the tuple
 			famInfo, typeInfo, protoInfo, canonName, socketAddr = addrInfoTuple
+			self.socketAddr = socketAddr
 			self.toIp = socketAddr[0]	# The first element of the sockAddr tuple is the IP address under both IPv4 and IPv6
 			try:
-				self.sock = socket.socket(socket.AF_INET6 if ipv6 else socket.AF_INET, socket.SOCK_DGRAM) # UDP
+				self.sock = socket.socket(family, socket.SOCK_DGRAM) # UDP
 				self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 				self.sock.connect(socketAddr)
 			except Exception as e:
@@ -173,7 +175,7 @@ class VBAN_Send(object):
 		try:
 			self.rawPcm = bytes(self.stream.read(self.chunkSize)[0])
 			self.rawData = self._constructFrame(self.rawPcm)
-			self.sock.sendto(self.rawData, (self.toIp,self.toPort))
+			self.sock.sendto(self.rawData, self.socketAddr)
 		except Exception as e:
 			logging.exception()
 
