@@ -99,7 +99,7 @@ class VBAN_Recv(object):
 			if self.stream_magicString == "VBAN" and self.subprotocol == 0:
 				if self.stream_streamName != self.streamName:
 					return
-				if (not self.any_sender) or (addr[0] != self.senderIp):
+				if (not self.any_sender) and (addr[0] != self.senderIp):
 					return
 				if self.channels != self.stream_chanNum or self.sampRate != self.stream_sampRate:
 					self._correctPyAudioStream()
