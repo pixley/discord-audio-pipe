@@ -3,6 +3,20 @@ import config
 import asyncio
 import sounddevice as sd
 import pkg_resources
+import logging
+
+print_formatter = logging.Formatter(
+	fmt="[%(name)s - %(levelname)s] %(message)s"
+)
+
+print_handler = logging.StreamHandler()
+print_handler.setLevel(logging.INFO)
+print_handler.setFormatter(print_formatter)
+
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.DEBUG)
+root_logger.addHandler(print_handler)
+
 
 DEFAULT = 0
 sd.default.channels = 2
@@ -23,10 +37,13 @@ async def main():
 	ipv6 = config.get_config_bool("VBAN", "ipv6")
 	# bool verbose
 	verbose = config.get_config_bool("VBAN", "verbose")
+	
+	if verbose:
+		print_handler.setLevel(logging.DEBUG)
 
 	# dict device
 	device = sd.query_devices(device_id)
-	print("Audio device: {}".format(device["name"]))
+	logging.info("Audio device: {}".format(device["name"]))
 
 	try:
 		# vban.VBAN_Send sender
@@ -35,23 +52,23 @@ async def main():
 		printed_ip = sender.toIp
 		if ipv6:
 			printed_ip = "[" + printed_ip + "]"
-		print("Beginning VBAN stream \"{}\" to {}:{}".format(stream_name, printed_ip, port))
+		logging.info("Beginning VBAN stream \"{}\" to {}:{}".format(stream_name, printed_ip, port))
 		try:
 			while True:
 				sender.runonce()
 				await asyncio.sleep(0)
 		finally:
 			sender.quit()
-	except Exception as e:
-		print(e)
-		print("Connection to {} failed.".format(host))
+	except Exception:
+		logging.exception()
+		logging.info("Connection to {} failed.".format(host))
 
 # check dependency on pyaudio, as we don't import it, and not having it will silently fail
 if "pyaudio" not in {pkg.key for pkg in pkg_resources.working_set}:
-	print("This applet requires the 'pyaudio' package.  You can install it with the command 'pip install pyaudio'.")
+	logging.error("This applet requires the 'pyaudio' package.  You can install it with the command 'pip install pyaudio'.")
 	quit()
 else:
-	print("Package 'pyaudio' found!")
+	logging.info("Package 'pyaudio' found!")
 
 # run program
 config.setup_config("vban_sender.cfg")
@@ -59,11 +76,11 @@ loop = asyncio.get_event_loop()
 try:
 	loop.run_until_complete(main())
 except KeyboardInterrupt:
-	print("Exit requested!")
-except Exception as e:
-	print("Error: {}".format(e))
+	logging.info("Exit requested!")
+except Exception:
+	logging.exception
 finally:
-	print("Exiting...")
+	logging.info("Exiting...")
 	# this sleep prevents a bugged exception on Windows
 	loop.run_until_complete(asyncio.sleep(1))
 	loop.close()

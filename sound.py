@@ -141,7 +141,7 @@ class VBANStream(discord.AudioSource):
 			# str logging.infoed_ip
 			printed_ip = self.receiver.senderIp
 			if host is None:
-				printed_ip = "::/0" if ipv6 else "0.0.0.0/0"
+				printed_ip = "[::/0]" if ipv6 else "0.0.0.0/0"
 			elif ipv6:
 				printed_ip = "[" + printed_ip + "]"
 			logging.info("VBAN receiver initalized on {}:{}!".format(printed_ip, port))

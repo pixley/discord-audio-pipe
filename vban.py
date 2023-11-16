@@ -19,18 +19,18 @@ class VBAN_Recv(object):
 				# socket.getaddrinfo() gives localhost for the ip address if the host is None, but
 				# that's not what socket.bind() wants
 				# stupid tuples and immutability...
-				socketAddr = socketAddr[:0] + ("",) + socketAddr[1:]
+				socketAddr = socketAddr[:0] + ("::" if ipv6 else "0.0.0.0",) + socketAddr[1:]
 			self.senderIp = socketAddr[0]	# The first element of the sockAddr tuple is the IP address under both IPv4 and IPv6
 			try:
 				self.sock = socket.socket(family, socket.SOCK_DGRAM) # UDP
 				self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-				self.sock.setsockopt(socket.SOL_IP, 15, 1) # optname 15 refers to IP_FREEBIND
+				#self.sock.setsockopt(socket.SOL_IP, 15, 1) # optname 15 refers to IP_FREEBIND
 				self.sock.bind(socketAddr)
 			except Exception:
 				printed_ip = self.senderIp
 				if self.any_sender:
-					printed_ip = "::/0" if ipv6 else "0.0.0.0/0"
-				if ipv6:
+					printed_ip = "[::/0]" if ipv6 else "0.0.0.0/0"
+				elif ipv6:
 					printed_ip = "[" + printed_ip + "]"
 				logging.exception("Failed socket binding for {}:{}.".format(printed_ip, port))
 				self.sock = None
@@ -94,12 +94,12 @@ class VBAN_Recv(object):
 			self.rawData = data
 			self._parseHeader(data)
 			if self.verbose:
-				logging.info("R"+self.stream_magicString+" "+str(self.stream_sampRate)+"Hz "+str(self.stream_sampNum)+"samp "+str(self.stream_chanNum)+"chan Format:"+str(self.stream_dataFormat)+" Name:"+self.stream_streamName+" Frame:"+str(self.stream_frameCounter))
+				logging.debug("R"+self.stream_magicString+" "+str(self.stream_sampRate)+"Hz "+str(self.stream_sampNum)+"samp "+str(self.stream_chanNum)+"chan Format:"+str(self.stream_dataFormat)+" Name:"+self.stream_streamName+" Frame:"+str(self.stream_frameCounter))
 			self.rawPcm = data[28:]   #Header stops at 28
 			if self.stream_magicString == "VBAN" and self.subprotocol == 0:
-				if not self.stream_streamName == self.streamName:
+				if self.stream_streamName != self.streamName:
 					return
-				if self.anySender or ( addr[0] != self.senderIp ):
+				if self.any_sender or ( addr[0] != self.senderIp ):
 					return
 				if self.channels != self.stream_chanNum or self.sampRate != self.stream_sampRate:
 					self._correctPyAudioStream()
@@ -109,7 +109,7 @@ class VBAN_Recv(object):
 			if e.errno == errno.EAGAIN or e.errno == errno.EWOULDBLOCK:
 				# we're not worried about a lack of data from the recvfrom() call
 				if self.verbose:
-					logging.info("No incoming data.")
+					logging.debug("No incoming data.")
 				# however, we do want to signal that we've run out of data to receive
 				raise IndexError()
 			else:
@@ -132,7 +132,7 @@ class VBAN_Send(object):
 		self.streamName = streamName
 		family = socket.AF_INET6 if ipv6 else socket.AF_INET
 		self.toPort = toPort
-		# We only care about the first result
+		# Find our target address
 		for addrInfoTuple in socket.getaddrinfo(toHost, toPort, type=socket.SOCK_DGRAM, family=family, proto=socket.IPPROTO_UDP):
 			# Break up the tuple
 			famInfo, typeInfo, protoInfo, canonName, socketAddr = addrInfoTuple
@@ -142,8 +142,8 @@ class VBAN_Send(object):
 				self.sock = socket.socket(family, socket.SOCK_DGRAM) # UDP
 				self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 				self.sock.connect(socketAddr)
-			except Exception as e:
-				logging.info(e)
+			except Exception:
+				logging.exception()
 				self.sock = None
 				continue
 			break
@@ -177,7 +177,7 @@ class VBAN_Send(object):
 		header += bytes(self.streamName + "\x00" * (16 - len(self.streamName)), 'utf-8')
 		header += struct.pack("<L",self.framecounter)
 		if self.verbose:
-			logging.info("SVBAN "+str(self.samprate)+"Hz "+str(self.chunkSize)+"samp "+str(self.channels)+"chan Format:1 Name:"+self.streamName+" Frame:"+str(self.framecounter))
+			logging.debug("SVBAN "+str(self.samprate)+"Hz "+str(self.chunkSize)+"samp "+str(self.channels)+"chan Format:1 Name:"+self.streamName+" Frame:"+str(self.framecounter))
 		return header+pcmData
 
 	def runonce(self):
