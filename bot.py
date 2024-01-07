@@ -88,7 +88,10 @@ class Dap_Bot(commands.Bot):
 
 	#params: Discord.VoiceChannel channel
 	async def join_voice_channel(self, channel):
-		self.voice = await channel.connect(timeout=config.get_config_float("System", "voice_timeout"), reconnect=True, cls=IPv6VoiceClient)
+		if config.get_config_bool("System", "ipv6"):
+			self.voice = await channel.connect(timeout=config.get_config_float("System", "voice_timeout"), reconnect=True, cls=IPv6VoiceClient)
+		else:
+			self.voice = await channel.connect(timeout=config.get_config_float("System", "voice_timeout"), reconnect=True)
 		if self.voice is None:
 			raise discord.LoginFailure
 		elif self.voice.is_connected() is False:
