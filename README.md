@@ -19,11 +19,11 @@ Program to send stereo audio (microphone, stereo mix, virtual audio cable, etc) 
 2. To link the program to your bot, create a file ``token.txt`` in the same directory as `main.pyw` and save the bot token inside
 
 ## Dependencies
-Requires Python 3.9+. Install dependencies by running `pip3 install -r requirements.txt`
+Requires Python 3.9+. Install dependencies by running `pip3 install -r requirements.txt`.  On newer Python versions and Linux distros, you may get an error about `externally-managed-environment`.  How you resolve this is unfortunately up to your particular needs for your machine.  Since I am the sole user of the VM on which I host my personal instance, I am comfortable with just running `pip install` with the `--break-system-packages` flag, but that is **not a recommendation**.
 
 In some cases PortAudio, xcb, and ffmpeg libraries may be missing on linux. On Ubuntu, they can be installed with
 ```
-    $ sudo apt-get install libportaudio2
-    $ sudo apt-get install libxcb-xinerama0
-    $ sudo apt-get install ffmpeg libavcodec-extra
+    $ sudo apt install portaudio19-dev
+    $ sudo apt install libxcb-xinerama0
+    $ sudo apt install ffmpeg libavcodec-extra
 ```
